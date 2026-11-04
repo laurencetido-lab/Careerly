@@ -12,9 +12,9 @@ import { Badge } from "./ui/badge";
 import { Field, Input, Select } from "./ui/input";
 import { cn } from "@/lib/utils";
 
-type Preview = { sheetName: string; headerRow: number; rowCount: number; columns: { index: number; header: string; inferredType: FieldTypeName; samples: string[]; emptyCount: number; suggestedBinding: "company.name" | "company.website" | null }[]; sampleRows: string[][] };
+type Preview = { sheetName: string; headerRow: number; rowCount: number; recognisedHeaders: string[]; columns: { index: number; header: string; inferredType: FieldTypeName; samples: string[]; emptyCount: number; suggestedBinding: "company.name" | "company.website" | null }[]; sampleRows: string[][] };
 type Mapping = { index: number; name: string; type: FieldTypeName; include: boolean; binding: "company.name" | "company.website" | null };
-type Validation = { issues: { row: number; column: string; message: string }[]; issueCount: number; duplicates: { row: number; firstRow: number; value: string }[]; totalRows: number; truncated: boolean };
+type Validation = { issues: { row: number; column: string; message: string }[]; issueCount: number; duplicates: { row: number; firstRow: number; value: string }[]; invalidNames: { row: number; value: string; reason: string }[]; invalidNameCount: number; totalRows: number; truncated: boolean; recognisedHeaders: string[]; blocked: string | null; needsConfirmation: string | null };
 
 const IMPORT_TYPES: FieldTypeName[] = ["TEXT", "LONG_TEXT", "NUMBER", "CURRENCY", "PERCENT", "DATE", "BOOLEAN", "SINGLE_SELECT", "MULTI_SELECT", "URL", "EMAIL"];
 
@@ -32,6 +32,7 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
   const [corrections, setCorrections] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ datasetId: string; created: number; updated: number; skipped: number; invalidCells: number } | null>(null);
   const [drag, setDrag] = useState(false);
+  const [confirmList, setConfirmList] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function applyPreview(p: Preview) {
@@ -69,6 +70,7 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
       const res = await validateImportAction(workspaceId, file.fileId, preview.sheetName, preview.headerRow, mapping);
       if (!res.ok) return void toast.error(res.error);
       setValidation(res.data);
+      setConfirmList(false);
       setStep(3);
     });
   }
@@ -76,7 +78,7 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
   function commit() {
     if (!file || !preview) return;
     start(async () => {
-      const res = await commitImport(workspaceId, { fileId: file.fileId, sheetName: preview.sheetName, headerRow: preview.headerRow, datasetName, targetDatasetId: target || null, duplicates, corrections }, mapping);
+      const res = await commitImport(workspaceId, { fileId: file.fileId, sheetName: preview.sheetName, headerRow: preview.headerRow, datasetName, targetDatasetId: target || null, duplicates, corrections, confirmEmployerList: confirmList }, mapping);
       if (!res.ok) return void toast.error(res.error);
       setResult(res.data);
       setStep(4);
@@ -169,6 +171,13 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
               )}
             </CardContent>
           </Card>
+          {(() => {
+            const nameCol = mapping.find((m) => m.include && m.binding === "company.name");
+            if (!preview.rowCount) return <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm"><b>This file has no data rows.</b> Check the header row or choose another sheet.</div>;
+            if (!nameCol) return <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm"><b>No column looks like a list of employer names.</b> Careerly expects a list of companies (for example a “Company” or “Employer” column). If this file has one, set its role to “Employer name”; otherwise this file is not suitable.</div>;
+            if (!preview.recognisedHeaders.length) return <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm"><b>This file does not look like a list of employers.</b> No usual column (Company, Role, City, Salary, Website…) was recognised. You will need to confirm that “{nameCol.name}” really contains company names.</div>;
+            return <div className="rounded-md border border-success/30 bg-success/10 p-3 text-sm"><b className="text-success">Looks like a list of employers.</b> Recognised columns: {preview.recognisedHeaders.join(", ")}.</div>;
+          })()}
           <Card className="overflow-hidden">
             <div className="border-b px-4 py-3">
               <p className="text-sm font-medium">Columns</p>
@@ -221,7 +230,26 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
         </div>
       )}
 
-      {step === 3 && validation && (
+      {step === 3 && validation && validation.blocked && (
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="space-y-3 pt-4">
+              <div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 size-4 text-destructive" /><div><p className="font-medium">This file cannot be imported</p><p className="text-sm text-muted-foreground">{validation.blocked}</p></div></div>
+              {validation.invalidNames.length ? (
+                <ul className="max-h-60 space-y-1 overflow-y-auto rounded-md border p-3 text-xs">
+                  {validation.invalidNames.slice(0, 15).map((n) => <li key={n.row}><span className="text-muted-foreground">Row {n.row}:</span> “{n.value}” · <span className="text-destructive">{n.reason}</span></li>)}
+                </ul>
+              ) : null}
+            </CardContent>
+          </Card>
+          <div className="flex justify-between">
+            <Button variant="ghost" onClick={() => { setStep(1); setFile(null); setPreview(null); }}>Choose another file</Button>
+            <Button onClick={() => setStep(2)}>Change the employer column</Button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && validation && !validation.blocked && (
         <div className="space-y-4">
           <Card>
             <CardContent className="space-y-3 pt-4">
@@ -230,7 +258,22 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
                 <Badge variant={validation.issueCount ? "warning" : "success"}>{validation.issueCount} value issue{validation.issueCount === 1 ? "" : "s"}</Badge>
                 <Badge variant={validation.duplicates.length ? "warning" : "success"}>{validation.duplicates.length} duplicate{validation.duplicates.length === 1 ? "" : "s"}</Badge>
                 {validation.truncated ? <Badge variant="danger">Only the first 5,000 rows will be imported</Badge> : null}
+                {validation.invalidNameCount ? <Badge variant="danger">{validation.invalidNameCount} row{validation.invalidNameCount === 1 ? "" : "s"} excluded</Badge> : null}
               </div>
+              {validation.invalidNameCount ? (
+                <div className="rounded-md border p-3">
+                  <p className="text-sm font-medium">Rows excluded: not company names</p>
+                  <ul className="mt-1 max-h-32 overflow-y-auto text-xs text-muted-foreground">
+                    {validation.invalidNames.slice(0, 30).map((n) => <li key={n.row}>Row {n.row}: “{n.value}” · {n.reason}</li>)}
+                  </ul>
+                </div>
+              ) : null}
+              {validation.needsConfirmation ? (
+                <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm">
+                  <p><b>Confirmation needed.</b> {validation.needsConfirmation}</p>
+                  <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={confirmList} onChange={(e) => setConfirmList(e.target.checked)} /> I confirm this file is a list of employers I am targeting.</label>
+                </div>
+              ) : null}
               {validation.duplicates.length > 0 && (
                 <div className="rounded-md border p-3">
                   <p className="text-sm font-medium">Duplicate employers</p>
@@ -272,7 +315,7 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
           )}
           <div className="flex justify-between">
             <Button variant="ghost" onClick={() => setStep(2)}>Back</Button>
-            <Button onClick={commit} disabled={pending}>{pending ? "Importing…" : `Import ${validation.totalRows} rows`}</Button>
+            <Button onClick={commit} disabled={pending || (!!validation.needsConfirmation && !confirmList)}>{pending ? "Importing…" : `Import ${validation.totalRows - validation.invalidNameCount} rows`}</Button>
           </div>
         </div>
       )}

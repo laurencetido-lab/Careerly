@@ -87,3 +87,37 @@ describe("import engine", () => {
     expect(String(sheet.rows[1][1])).toContain("HYPERLINK");
   });
 });
+
+describe("import guardrails: only lists of employers", () => {
+  const run = (csv: string) => {
+    const [sheet] = parseWorkbook(Buffer.from(csv));
+    const prev = previewSheet(sheet);
+    const mapping = prev.columns.map((c) => ({ index: c.index, name: c.header, type: c.inferredType, include: true, binding: c.suggestedBinding }));
+    return { prev, check: validateImport(sheet, prev.headerRow, mapping), sheet, mapping };
+  };
+  it("refuses files with no plausible employer column", () => {
+    const numbers = run("Date,Amount,Code\n2024-01-02,120,4455\n2024-01-03,98,4456\n");
+    expect(numbers.prev.columns.some((c) => c.suggestedBinding === "company.name")).toBe(false);
+    expect(numbers.check.blocked).toMatch(/employer/i);
+    const notes = run("Notes\nI must call the dentist tomorrow morning before ten.\nBuy a present for Paul's birthday this week.\n");
+    expect(notes.check.blocked).toBeTruthy();
+  });
+  it("blocks when a forced name column holds emails, dates or sentences", () => {
+    const { sheet, prev } = run("Email,Signed up\njean@example.com,yes\nmarie@example.com,no\nzoe@example.com,yes\n");
+    const forced = prev.columns.map((c, i) => ({ index: c.index, name: c.header, type: c.inferredType, include: true, binding: i === 0 ? ("company.name" as const) : null }));
+    const c = validateImport(sheet, prev.headerRow, forced);
+    expect(c.blocked).toMatch(/not company names/);
+    expect(c.invalidNames[0].reason).toMatch(/email/);
+  });
+  it("asks for confirmation when nothing career-related is recognised", () => {
+    const shopping = run("Product,Quantity,Price\nApples,3,2.5\nMilk,2,1.2\nBread,1,1.1\nPasta,4,0.9\n");
+    expect(shopping.check.blocked).toBeNull();
+    expect(shopping.check.needsConfirmation).toMatch(/No usual column/);
+  });
+  it("accepts real employer lists and excludes the odd bad row", () => {
+    const ok = run("Company,City\nArdian,Paris\nTikehau Capital,Paris\n12345,Paris\nEurazeo,Paris\nWendel,Paris\n");
+    expect(ok.check.blocked).toBeNull();
+    expect(ok.check.needsConfirmation).toBeNull();
+    expect(ok.check.invalidNames).toHaveLength(1);
+  });
+});

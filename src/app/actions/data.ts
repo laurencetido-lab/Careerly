@@ -9,7 +9,7 @@ import { action, AppError } from "@/server/errors";
 import { audit } from "@/server/audit";
 import { upsertSource } from "@/server/research/apply";
 import { sourceTier } from "@/server/research/sources";
-import { displayValue, domainOf, isUrl, normalizeName, normalizeUrl, parseValue, slugKey, storageType, type FieldTypeName } from "@/lib/fields";
+import { displayValue, domainOf, isUrl, normalizeName, normalizeUrl, orgNameError, parseValue, slugKey, storageType, type FieldTypeName } from "@/lib/fields";
 import { evaluateFormula } from "@/lib/formula";
 
 const p = (wid: string, did: string) => revalidatePath(`/app/w/${wid}/data/${did}`);
@@ -33,6 +33,10 @@ export async function updateCell(workspaceId: string, rowId: string, fieldId: st
     if (!parsed.ok) throw new AppError(parsed.error, "INVALID");
     if (type === "SINGLE_SELECT" && parsed.value.textValue && field.options.length && !field.options.includes(parsed.value.textValue)) {
       await db.fieldDefinition.update({ where: { id: field.id }, data: { options: [...field.options, parsed.value.textValue] } });
+    }
+    if (field.isPrimary) {
+      const why = orgNameError(parsed.value.textValue ?? "");
+      if (why) throw new AppError(`This is ${why}.`, "INVALID");
     }
     const existing = await db.fieldValue.findUnique({ where: { rowId_fieldId: { rowId, fieldId } } });
     const prev = displayValue(existing, type);
@@ -136,6 +140,8 @@ export async function addRow(workspaceId: string, datasetId: string, name: strin
     await requireDataset(workspaceId, datasetId);
     const clean = name.trim().slice(0, 200);
     if (!clean) throw new AppError("Enter a name.", "INVALID");
+    const why = orgNameError(clean);
+    if (why) throw new AppError(`“${clean.slice(0, 40)}” is ${why}.`, "INVALID");
     const primary = await db.fieldDefinition.findFirst({ where: { datasetId, isPrimary: true } });
     const count = await db.datasetRow.aggregate({ where: { datasetId }, _max: { position: true } });
     const normalized = normalizeName(clean);

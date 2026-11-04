@@ -284,3 +284,36 @@ export function domainOf(url: string | null | undefined) {
     return null;
   }
 }
+
+// ── Import guardrails: a list must actually be a list of employers ──
+
+/** Headers that commonly appear in career / employer lists (any language we support). */
+export const CAREER_HEADER = /(soci[ée]t[ée]|entreprise|compan|employ|firm|fonds|fund|banque|bank|cabinet|groupe|group|organi[sz]ation|^nom|name|poste|r[ôo]le|job|intitul|salaire|salary|r[ée]mun|bonus|ville|city|location|lieu|pays|country|site|website|url|secteur|sector|industr|deadline|date limite|candidature|application|contact|recrut|recruit|programme|program|graduate|stage|intern|alternance|visa|remote|t[ée]l[ée]travail|aum|effectif|headcount|taille|bureau|office)/i;
+export const EMPLOYER_HEADER = /^(soci[ée]t[ée]s?|entreprises?|compan(y|ies)( name)?|employers?|employeurs?|firms?|fonds|funds?|banques?|banks?|cabinets?|organi[sz]ations?|groupes?|nom( de l'entreprise| de la soci[ée]t[ée]| de l'employeur)?|name|raison sociale|structure|investisseurs?|investors?)$/i;
+
+/** Why a value is not a plausible organisation name (null when it is). */
+export function orgNameError(raw: unknown): string | null {
+  const s = String(raw ?? "").trim();
+  if (!s) return "empty name";
+  if (s.length < 2) return "too short for a company name";
+  if (s.length > 80) return "too long for a company name";
+  if (/^[\d\s.,;:%€$£+\-/()]+$/.test(s)) return "a number, not a name";
+  if (/^\d{1,4}[/.\-]\d{1,2}[/.\-]\d{1,4}/.test(s)) return "a date, not a name";
+  if (/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(s)) return "an email address";
+  if (/^(https?:\/\/|www\.)/i.test(s)) return "a link (put it in the website column)";
+  if (!/\p{L}/u.test(s)) return "contains no letters";
+  if (s.split(/\s+/).length > 8 || /[.!?]\s+\p{L}/u.test(s)) return "a sentence, not a name";
+  if (/^(oui|non|yes|no|true|false|n\/a|na|null|none|aucun|-|tbd|à définir)$/i.test(s)) return "a placeholder, not a name";
+  return null;
+}
+
+/** Why a value is not a plausible person name (null when it is). */
+export function personNameError(raw: unknown): string | null {
+  const s = String(raw ?? "").trim();
+  if (s.length < 3) return "Enter the person's first and last name";
+  if (s.length > 80) return "Name is too long";
+  if (/@|https?:|www\.|\d/.test(s)) return "A person's name cannot contain digits, an email or a link";
+  if (!/^[\p{L}'’.\- ]+$/u.test(s)) return "Use letters, spaces, hyphens and apostrophes only";
+  if (s.split(/\s+/).filter((w) => w.length > 1).length < 2) return "Enter the person's first and last name";
+  return null;
+}

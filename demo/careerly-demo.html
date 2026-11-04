@@ -330,16 +330,59 @@ function fmt(f, v) {
   if (t === "CURRENCY") { const n = num(v); return n == null ? String(v) : new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n); }
   if (t === "NUMBER") { const n = num(v); return n == null ? String(v) : new Intl.NumberFormat("fr-FR").format(n); }
   if (t === "BOOL") return /^(oui|yes|true|1|x)$/i.test(v) ? "Oui" : /^(non|no|false|0)$/i.test(v) ? "Non" : String(v);
-  if (t === "DATE") { const d = new Date(v); return isNaN(d) ? String(v) : d.toLocaleDateString("fr-FR"); }
+  if (t === "DATE") { const d = parseD(v); return d ? d.toLocaleDateString("fr-FR") : String(v); }
   return String(v);
+}
+function parseD(v) {
+  const t = String(v).trim(); let m = t.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return mk(+m[1], +m[2], +m[3]);
+  m = t.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})$/); if (m) return mk(+m[3], +m[2], +m[1]); return null;
+  function mk(y, mo, d) { const x = new Date(Date.UTC(y, mo - 1, d)); return x.getUTCMonth() === mo - 1 && x.getUTCDate() === d ? x : null; }
 }
 function validate(f, v) {
   if (v === "") return null; const t = vt(f);
   if ((t === "NUMBER" || t === "CURRENCY") && num(v) == null) return `« ${v} » n'est pas un nombre`;
   if (t === "URL" && !/^(https?:\/\/)?[^\s]+\.[a-z]{2,}/i.test(v)) return `« ${v} » n'est pas un lien valide`;
   if (t === "BOOL" && !/^(oui|non|yes|no|true|false|1|0|x)$/i.test(v)) return "Répondez oui ou non";
-  if (t === "DATE" && isNaN(new Date(v))) return "Date non reconnue (AAAA-MM-JJ)";
+  if (t === "DATE" && !parseD(v)) return "Date non reconnue (JJ/MM/AAAA ou AAAA-MM-JJ)";
   return null;
+}
+// ── Garde-fous : un import doit être une vraie liste d'employeurs ──
+const CAREER_HEADERS = /(soci[ée]t[ée]|entreprise|compan|employ|firm|fonds|fund|banque|bank|cabinet|groupe|group|organi[sz]ation|^nom|name|poste|r[ôo]le|job|intitul|salaire|salary|r[ée]mun|bonus|ville|city|location|lieu|pays|country|site|website|url|secteur|sector|industr|deadline|date limite|candidature|application|contact|recrut|recruit|programme|graduate|stage|intern|alternance|visa|remote|t[ée]l[ée]travail|aum|effectif|taille|bureau|office)/i;
+const NAME_HEADERS = /^(soci[ée]t[ée]s?|entreprises?|compan(y|ies)( name)?|employers?|employeurs?|firms?|fonds|funds?|banques?|banks?|cabinets?|organi[sz]ations?|groupes?|nom( de l'entreprise| de la soci[ée]t[ée]| de l'employeur)?|name|raison sociale|structure|investisseurs?|investors?)$/i;
+/** Pourquoi une valeur n'est pas un nom d'entreprise plausible (null si elle l'est). */
+function orgNameError(raw) {
+  const s = String(raw ?? "").trim();
+  if (!s) return "nom vide";
+  if (s.length < 2) return "trop court pour un nom d'entreprise";
+  if (s.length > 80) return "trop long pour un nom d'entreprise";
+  if (/^[\d\s.,;:%€$£+\-/()]+$/.test(s)) return "c'est un nombre, pas un nom";
+  if (/^\d{1,4}[\/.\-]\d{1,2}[\/.\-]\d{1,4}/.test(s)) return "c'est une date, pas un nom";
+  if (/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(s)) return "c'est une adresse e-mail";
+  if (/^(https?:\/\/|www\.)/i.test(s)) return "c'est un lien (à mettre dans la colonne Site web)";
+  if (!/\p{L}/u.test(s)) return "ne contient aucune lettre";
+  if (s.split(/\s+/).length > 8 || /[.!?]\s+\p{L}/u.test(s)) return "c'est une phrase, pas un nom";
+  if (/^(oui|non|yes|no|true|false|n\/a|na|null|none|aucun|-|tbd|à définir)$/i.test(s)) return "valeur générique, pas un nom";
+  return null;
+}
+function personNameError(raw) {
+  const s = String(raw ?? "").trim();
+  if (s.length < 3) return "Indiquez le prénom et le nom";
+  if (s.length > 60) return "Nom trop long";
+  if (/@|https?:|www\.|\d/.test(s)) return "Un nom de personne ne contient ni chiffres, ni e-mail, ni lien";
+  if (!/^[\p{L}'’.\- ]+$/u.test(s)) return "Utilisez uniquement des lettres, espaces, tirets et apostrophes";
+  if (s.split(/\s+/).filter((w) => w.length > 1).length < 2) return "Indiquez le prénom et le nom";
+  return null;
+}
+/** Diagnostic d'un fichier : ressemble-t-il à une liste d'employeurs ? */
+function diagnose(map, data) {
+  const rec = map.filter((m) => CAREER_HEADERS.test(m.name)).map((m) => m.name);
+  const cols = map.map((m) => {
+    const vals = data.map((r) => r[m.idx]).filter((x) => x !== null && String(x).trim() !== "");
+    const ok = vals.filter((v) => !orgNameError(v));
+    const distinct = new Set(vals.map((v) => String(v).trim().toLowerCase())).size;
+    return { m, filled: vals.length / Math.max(1, data.length), validShare: vals.length ? ok.length / vals.length : 0, distinctShare: vals.length ? distinct / vals.length : 0 };
+  });
+  return { recognised: rec, cols };
 }
 function infer(vals, header) {
   const v = vals.filter((x) => x !== null && x !== undefined && String(x).trim() !== "").map(String);
@@ -505,7 +548,10 @@ function evidenceForm(rid, fid) {
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Enregistrer avec la preuve</button></div></form>`);
   $("#evForm").onsubmit = (e) => {
     e.preventDefault(); const v = $("#evV").value.trim(), u = $("#evU").value.trim();
-    const err = validate(f, v) || (!/^(https?:\/\/)?[^\s]+\.[a-z]{2,}/i.test(u) ? "Le lien de la source n'est pas valide" : null);
+    const ex = $("#evE").value.trim();
+    const err = (!v ? "Indiquez la valeur trouvée" : null) || validate(f, v) || (!/^(https?:\/\/)?[^\s]+\.[a-z]{2,}/i.test(u) ? "Le lien de la source n'est pas valide" : null)
+      || (ex.length < 15 ? "L'extrait doit reprendre la phrase de la source (15 caractères minimum)" : null)
+      || (["NUMBER", "CURRENCY"].includes(vt(f)) && num(v) != null && !(ex.replace(/[\s\u00a0\u202f]/g, "").match(/\d+(?:[.,]\d+)?[kK]?/g) || []).some((t) => { const n = num(t); return n != null && Math.abs(n - num(v)) <= Math.max(1, num(v) * 0.005); }) ? "Le chiffre saisi n'apparaît pas dans l'extrait : la preuve doit contenir la valeur" : null);
     if (err) return void ($("#evErr").textContent = err);
     const conf = $("#evC").value;
     const { r: row } = setCell(rid, fid, v, { why: "Recherche manuelle", cell: { conf } });
@@ -523,7 +569,7 @@ function fieldForm() {
     <label class="f">Que doit-on rechercher ?<span class="h">Écrivez-le comme une consigne à un analyste.</span><textarea class="in" id="fP"></textarea></label>
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Ajouter le champ</button></div></form>`);
   document.querySelectorAll("[data-preset]").forEach((b) => (b.onclick = () => { const p = presets[+b.dataset.preset]; $("#fN").value = p[0]; $("#fT").value = "AI"; $("#fV").value = p[1]; $("#fP").value = p[2]; }));
-  $("#fForm").onsubmit = (e) => { e.preventDefault(); const name = $("#fN").value.trim(); if (S.fields.some((f) => f.name.toLowerCase() === name.toLowerCase())) return toast("Ce nom de champ existe déjà"); const t = $("#fT").value; S.fields.push({ id: uid(), name, type: t, vt: t === "AI" ? $("#fV").value : undefined, prompt: $("#fP").value.trim() || undefined }); save(); closeLayer(); toast(`Champ « ${name} » ajouté`); rerender(); };
+  $("#fForm").onsubmit = (e) => { e.preventDefault(); const name = $("#fN").value.trim(); if (name.length < 2 || name.length > 60) return toast("Le nom du champ doit faire entre 2 et 60 caractères"); if ($("#fT").value === "AI" && $("#fP").value.trim().length < 10) return toast("Décrivez ce qu'il faut rechercher (10 caractères minimum)"); if (S.fields.some((f) => f.name.toLowerCase() === name.toLowerCase())) return toast("Ce nom de champ existe déjà"); const t = $("#fT").value; S.fields.push({ id: uid(), name, type: t, vt: t === "AI" ? $("#fV").value : undefined, prompt: $("#fP").value.trim() || undefined }); save(); closeLayer(); toast(`Champ « ${name} » ajouté`); rerender(); };
 }
 function researchModal(scope, rid) {
   const ai = S.fields.filter((f) => f.type === "AI"); const rows = scope === "row" ? 1 : S.rows.length;
@@ -545,17 +591,32 @@ function viewImport() {
   if (imp.step === 2) return `<div class="head"><div><h1>Importer « ${esc(imp.file)} »</h1><p class="sub">Vérifiez le type détecté de chaque colonne et indiquez celle qui contient le nom de l'employeur.</p></div></div>
     <div class="steps"><span class="done">Fichier</span><span class="on">Colonnes</span><span>Vérification</span></div>
     <div class="row">${imp.sheets.length > 1 ? `<label class="f" style="min-width:200px">Feuille<select class="in" id="sheet">${imp.sheets.map((s) => `<option ${s === imp.sheet ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></label>` : ""}<span class="meta">${imp.data.length} lignes détectées · ligne d'en-tête ${imp.headerRow + 1}</span></div>
+    ${diagCard()}
     <div class="tablebox"><table class="t"><thead><tr><th>Garder</th><th>Nom de colonne</th><th>Type</th><th>Rôle</th><th>Exemples</th></tr></thead><tbody>
     ${imp.map.map((m, i) => `<tr><td><input type="checkbox" data-mk="${i}" ${m.keep ? "checked" : ""} aria-label="Garder ${esc(m.name)}"></td><td><input class="in" data-mn="${i}" value="${esc(m.name)}" aria-label="Nom"></td><td><select class="in" data-mt="${i}" aria-label="Type de ${esc(m.name)}">${Object.entries(TYPES).filter(([k]) => k !== "AI").map(([k, l]) => `<option value="${k}" ${k === m.type ? "selected" : ""}>${l}</option>`).join("")}</select></td><td><select class="in" data-mr="${i}" aria-label="Rôle"><option value="">Champ personnalisé</option><option value="name" ${m.role === "name" ? "selected" : ""}>Nom de l'employeur</option></select></td><td class="meta">${esc(imp.data.map((r) => r[m.idx]).filter((x) => x !== null && x !== "").slice(0, 3).join(" · "))}</td></tr>`).join("")}
     </tbody></table></div>
     <div class="row" style="justify-content:space-between"><button class="btn ghost" data-act="impcancel">Annuler</button><button class="btn pri" data-act="impcheck">Vérifier les données</button></div>`;
-  const v = imp.check;
+  const v = imp.check; const nmName = imp.map.find((m) => m.role === "name")?.name ?? "";
+  if (v.blocked) return `<div class="head"><div><span class="eyebrow">Import refusé</span><h1>Ce fichier ne peut pas être importé</h1><p class="sub">${esc(v.blocked)}</p></div></div>
+    <div class="steps"><span class="done">Fichier</span><span class="done">Colonnes</span><span class="on">Vérification</span></div>
+    <div class="card"><h2>Exemples de valeurs refusées</h2><p>Un nom d'entreprise ne peut pas être un nombre, une date, un e-mail, un lien ou une phrase.</p>
+      <div class="tablebox"><table class="t"><tbody>${v.badNames.slice(0, 12).map((x) => `<tr><td class="meta num">Ligne ${x.row}</td><td>${esc(x.v)}</td><td style="color:var(--bad)">${esc(x.msg)}</td></tr>`).join("")}</tbody></table></div></div>
+    <div class="row" style="justify-content:space-between"><button class="btn ghost" data-act="impcancel">Choisir un autre fichier</button><button class="btn pri" data-act="impback">Changer de colonne</button></div>`;
   return `<div class="head"><div><h1>Vérification</h1><p class="sub">Corrigez une valeur ici, ou revenez changer le type de colonne. Les valeurs restées invalides sont importées vides.</p></div></div>
     <div class="steps"><span class="done">Fichier</span><span class="done">Colonnes</span><span class="on">Vérification</span></div>
-    <div class="row"><span class="badge ac">${imp.data.length} lignes</span><span class="badge ${v.issues.length ? "warn" : "good"}">${v.issues.length} valeur${v.issues.length > 1 ? "s" : ""} à corriger</span><span class="badge ${v.dups.length ? "warn" : "good"}">${v.dups.length} doublon${v.dups.length > 1 ? "s" : ""}</span></div>
+    <div class="row"><span class="badge ac">${imp.data.length} lignes</span><span class="badge ${v.issues.length ? "warn" : "good"}">${v.issues.length} valeur${v.issues.length > 1 ? "s" : ""} à corriger</span><span class="badge ${v.dups.length ? "warn" : "good"}">${v.dups.length} doublon${v.dups.length > 1 ? "s" : ""}</span>${v.badNames.length ? `<span class="badge bad">${v.badNames.length} ligne${v.badNames.length > 1 ? "s" : ""} écartée${v.badNames.length > 1 ? "s" : ""}</span>` : ""}</div>
+    ${v.badNames.length ? `<div class="card"><h2>Lignes écartées</h2><p>Ces valeurs de « ${esc(nmName)} » ne sont pas des noms d'entreprises. Elles ne seront pas importées.</p>${v.badNames.slice(0, 10).map((x) => `<div class="meta">Ligne ${x.row} : « ${esc(x.v)} » · ${esc(x.msg)}</div>`).join("")}${v.badNames.length > 10 ? `<div class="meta">… et ${v.badNames.length - 10} autre(s)</div>` : ""}</div>` : ""}
+    ${v.needConfirm ? `<div class="banner"><b>Confirmation nécessaire.</b> ${v.repeated ? `Les mêmes valeurs reviennent très souvent dans « ${esc(nmName)} », ce qui est inhabituel pour une liste d'employeurs.` : "Aucune colonne habituelle (Entreprise, Poste, Ville, Salaire…) n'a été reconnue dans ce fichier."}<label class="row" style="margin-top:8px"><input type="checkbox" id="confirmRel"> Je confirme que « ${esc(nmName)} » contient bien des noms d'entreprises que je vise.</label></div>` : ""}
     ${v.dups.length ? `<div class="card"><h2>Doublons</h2><p>${v.dups.map((d) => `Ligne ${d.row} : « ${esc(d.v)} » répète la ligne ${d.first}`).join(" · ")}</p><label class="row"><input type="checkbox" id="skipDup" checked> Garder la première occurrence, ignorer les répétitions</label></div>` : ""}
     ${v.issues.length ? `<div class="tablebox"><table class="t"><tbody>${v.issues.map((x, i) => `<tr><td class="meta">Ligne ${x.row}</td><td>${esc(x.col)}</td><td style="color:var(--bad)">${esc(x.msg)}</td><td><input class="in" data-fix="${i}" placeholder="Valeur corrigée" aria-label="Corriger ligne ${x.row}"></td></tr>`).join("")}</tbody></table></div>` : ""}
     <div class="row" style="justify-content:space-between"><button class="btn ghost" data-act="impback">Retour</button><button class="btn pri" data-act="impgo">Importer</button></div>`;
+}
+function diagCard() {
+  const d = imp.diag; const nm = imp.map.find((m) => m.role === "name");
+  if (!imp.data.length) return `<div class="banner"><b>Fichier vide.</b> Aucune ligne de données n'a été trouvée sous l'en-tête.</div>`;
+  if (!nm) return `<div class="banner"><b>Aucune colonne ne ressemble à des noms d'employeurs.</b> Careerly attend une liste d'entreprises (par exemple une colonne « Entreprise » ou « Société »). Si ce fichier en contient une, choisissez-la dans « Rôle » ; sinon, ce fichier n'est pas adapté.</div>`;
+  if (!d.recognised.length) return `<div class="banner"><b>Ce fichier ne ressemble pas à une liste d'employeurs.</b> Aucune colonne habituelle n'a été reconnue (Entreprise, Poste, Ville, Salaire, Site web…). Vous devrez confirmer à l'étape suivante que la colonne « ${esc(nm.name)} » contient bien des noms d'entreprises.</div>`;
+  return `<div class="sec" style="border-color:color-mix(in srgb, var(--good) 35%, transparent)"><div class="lab" style="color:var(--good)">✓ Ressemble à une liste d'employeurs</div><span class="meta">Colonnes reconnues : ${d.recognised.map(esc).join(", ")}. Noms d'employeurs lus dans « ${esc(nm.name)} ».</span></div>`;
 }
 function loadWorkbook(file) {
   const rd = new FileReader();
@@ -573,26 +634,39 @@ function pickSheet(name) {
   const head = rows[h] || []; const data = rows.slice(h + 1).slice(0, 2000);
   const width = Math.max(head.length, ...data.slice(0, 30).map((r) => r.length));
   const map = []; for (let c = 0; c < width; c++) { const name = String(head[c] ?? "").trim() || `Colonne ${c + 1}`; const vals = data.map((r) => r[c]); if (vals.every((x) => x === null) && !head[c]) continue; map.push({ idx: c, name, type: infer(vals, name), keep: true, role: "" }); }
-  const nm = map.find((m) => /^(société|societe|entreprise|company|employer|employeur|fonds|fund|firm|nom|name)$/i.test(m.name)) || map.find((m) => m.type === "TEXT"); if (nm) nm.role = "name";
-  Object.assign(imp, { sheet: name, headerRow: h, data, map, fix: {} });
+  const dg = diagnose(map, data);
+  for (const c of dg.cols) if (c.filled < 0.1) c.m.keep = false; // colonnes quasi vides : décochées par défaut
+  const byHeader = map.find((m) => NAME_HEADERS.test(m.name));
+  const byValues = dg.cols.filter((c) => c.m.type === "TEXT" && c.validShare >= 0.8 && c.distinctShare >= 0.7 && c.filled >= 0.5).sort((a, b) => b.validShare - a.validShare)[0]?.m;
+  const nm = byHeader || byValues; if (nm) nm.role = "name";
+  Object.assign(imp, { sheet: name, headerRow: h, data, map, fix: {}, diag: { ...dg, nameByHeader: Boolean(byHeader) } });
 }
 function checkImport() {
   const kept = imp.map.filter((m) => m.keep); const nm = kept.find((m) => m.role === "name");
   if (!nm) return toast("Choisissez la colonne qui contient le nom de l'employeur"), false;
-  const issues = [], dups = [], seen = new Map();
+  if (!imp.data.length) return toast("Ce fichier ne contient aucune ligne de données"), false;
+  const issues = [], dups = [], badNames = [], seen = new Map(); let names = 0;
   imp.data.forEach((r, i) => { const row = imp.headerRow + 2 + i;
+    const raw = r[nm.idx]; if (raw === null || String(raw).trim() === "") return; names++;
+    const ne = orgNameError(raw); if (ne) { badNames.push({ row, v: String(raw).slice(0, 60), msg: ne }); return; }
     for (const m of kept) { if (m.role === "name") continue; const v = r[m.idx]; if (v === null || v === "") continue; const err = validate({ type: m.type }, String(v)); if (err) issues.push({ row, col: m.name, msg: err, idx: m.idx, i }); }
-    const k = String(r[nm.idx] ?? "").trim().toLowerCase(); if (!k) return; if (seen.has(k)) dups.push({ row, first: seen.get(k), v: r[nm.idx] }); else seen.set(k, row); });
-  imp.check = { issues, dups }; imp.step = 3; return true;
+    const k = String(raw).trim().toLowerCase(); if (seen.has(k)) dups.push({ row, first: seen.get(k), v: raw }); else seen.set(k, row); });
+  const badShare = names ? badNames.length / names : 1;
+  const repeated = seen.size && seen.size / Math.max(1, names - badNames.length) < 0.5;
+  const blocked = !names ? "La colonne choisie ne contient aucun nom." : badShare > 0.3 ? `${Math.round(badShare * 100)} % des valeurs de « ${nm.name} » ne sont pas des noms d'entreprises. Ce fichier ne semble pas être une liste d'employeurs, ou la mauvaise colonne est sélectionnée.` : null;
+  const needConfirm = !blocked && (!imp.diag.recognised.length || repeated);
+  imp.check = { issues, dups, badNames, blocked, needConfirm, repeated, names }; imp.step = 3; return true;
 }
 function commitImport() {
   const kept = imp.map.filter((m) => m.keep); const nm = kept.find((m) => m.role === "name");
+  if (!imp.check || imp.check.blocked) return toast("Import impossible : corrigez d'abord les problèmes signalés");
+  if (imp.check.needConfirm && !$("#confirmRel")?.checked) return toast("Cochez la confirmation avant d'importer");
   document.querySelectorAll("[data-fix]").forEach((el) => { if (el.value.trim()) { const x = imp.check.issues[+el.dataset.fix]; imp.data[x.i][x.idx] = el.value.trim(); } });
   const skip = $("#skipDup") ? $("#skipDup").checked : true;
   const fmap = new Map(); fmap.set(nm.idx, primary().id);
   for (const m of kept) { if (m === nm) continue; let f = S.fields.find((x) => x.name.toLowerCase() === m.name.toLowerCase()); if (!f) { f = { id: uid(), name: m.name, type: m.type }; S.fields.push(f); } fmap.set(m.idx, f.id); }
   const exist = new Map(S.rows.map((r) => [rowName(r).toLowerCase(), r])); let added = 0, updated = 0, empty = 0; const seen = new Set();
-  for (const r of imp.data) { const n = String(r[nm.idx] ?? "").trim(); if (!n) continue; const k = n.toLowerCase(); if (seen.has(k) && skip) continue; seen.add(k);
+  for (const r of imp.data) { const n = String(r[nm.idx] ?? "").trim(); if (!n || orgNameError(n)) continue; const k = n.toLowerCase(); if (seen.has(k) && skip) continue; seen.add(k);
     let row = skip ? exist.get(k) : null; if (row) updated++; else { row = { id: uid(), cells: {} }; S.rows.push(row); exist.set(k, row); added++; }
     for (const m of kept) { const v = r[m.idx]; if (v === null || v === "") continue; const f = S.fields.find((x) => x.id === fmap.get(m.idx)); if (m !== nm && validate(f, String(v))) { empty++; continue; } if (row.cells[f.id]?.lock) continue; row.cells[f.id] = { ...(row.cells[f.id] || {}), v: String(v) }; } }
   save(); imp = null; toast(`Import terminé : ${added} nouvelles lignes, ${updated} mises à jour${empty ? `, ${empty} valeurs invalides laissées vides` : ""}`); location.hash = "entreprises";
@@ -624,7 +698,10 @@ function contactForm(company = "") {
     <label class="f">Poste<input class="in" id="cT" placeholder="Analyste investissement"></label><label class="f">Ville<input class="in" id="cL" placeholder="Paris"></label></div>
     <label class="f">École en commun<span class="h">Seulement si vous le savez. Careerly ne le devine jamais.</span><input class="in" id="cA"></label>
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Ajouter</button></div></form>`);
-  $("#cForm").onsubmit = (e) => { e.preventDefault(); const c = { id: uid(), name: $("#cN").value.trim(), company: $("#cC").value.trim(), title: $("#cT").value.trim(), city: $("#cL").value.trim(), alumni: $("#cA").value.trim(), stage: "Présélectionné", log: [], drafts: [] }; S.contacts.push(c); save(); location.hash = "reseau"; rerender(); openContact(c.id); };
+  $("#cForm").onsubmit = (e) => { e.preventDefault();
+    const err = personNameError($("#cN").value) || ($("#cC").value.trim() && orgNameError($("#cC").value) ? `Employeur : ${orgNameError($("#cC").value)}` : null) || ($("#cT").value.trim().length > 80 ? "Intitulé de poste trop long" : null) || (S.contacts.some((x) => x.name.toLowerCase() === $("#cN").value.trim().toLowerCase() && x.company.toLowerCase() === $("#cC").value.trim().toLowerCase()) ? "Ce contact existe déjà" : null);
+    if (err) return toast(err);
+    const c = { id: uid(), name: $("#cN").value.trim(), company: $("#cC").value.trim(), title: $("#cT").value.trim(), city: $("#cL").value.trim(), alumni: $("#cA").value.trim(), stage: "Présélectionné", log: [], drafts: [] }; S.contacts.push(c); save(); location.hash = "reseau"; rerender(); openContact(c.id); };
 }
 function score(c) {
   const r = []; let s = 0; const roleW = S.ws.roles.join(" ").toLowerCase().split(/\W+/).filter((w) => w.length > 3);
@@ -690,7 +767,11 @@ function appForm(id, company = "") {
     <label class="f">Lien de l'offre<input class="in" id="aU" value="${esc(a.url)}"></label><label class="f">Prochaine action<input class="in" id="aN" value="${esc(a.next)}" placeholder="Envoyer le CV"></label></div>
     <label class="f">Notes (tests, entretiens, retours)<textarea class="in" id="aT">${esc(a.notes)}</textarea></label>
     <div class="row" style="justify-content:space-between">${id ? `<button type="button" class="btn ghost" data-act="delapp" data-a="${id}" style="color:var(--bad)">Supprimer</button>` : "<span></span>"}<span class="row"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Enregistrer</button></span></div></form>`);
-  $("#aForm").onsubmit = (e) => { e.preventDefault(); const v = { role: $("#aR").value.trim(), company: $("#aC").value.trim(), stage: $("#aS").value, deadline: $("#aD").value, url: $("#aU").value.trim(), next: $("#aN").value.trim(), notes: $("#aT").value.trim() }; if (id) Object.assign(S.apps.find((x) => x.id === id), v); else S.apps.push({ id: uid(), ...v }); save(); closeLayer(); toast("Candidature enregistrée"); if (location.hash !== "#candidatures") location.hash = "candidatures"; else rerender(); };
+  $("#aForm").onsubmit = (e) => { e.preventDefault();
+    const role = $("#aR").value.trim(), co = $("#aC").value.trim(), url = $("#aU").value.trim(), dl = $("#aD").value;
+    const err = role.length < 3 ? "Indiquez l'intitulé du poste" : /^[\d\s.,]+$/.test(role) ? "L'intitulé du poste ne peut pas être un nombre" : role.length > 100 ? "Intitulé trop long" : co && orgNameError(co) ? `Employeur : ${orgNameError(co)}` : url && !/^https?:\/\/[^\s]+\.[a-z]{2,}/i.test(url) ? "Le lien de l'offre doit commencer par http:// ou https://" : dl && (new Date(dl).getFullYear() < 2020 || new Date(dl).getFullYear() > 2035) ? "Date limite improbable : vérifiez l'année" : null;
+    if (err) return toast(err);
+    const v = { role: $("#aR").value.trim(), company: $("#aC").value.trim(), stage: $("#aS").value, deadline: $("#aD").value, url: $("#aU").value.trim(), next: $("#aN").value.trim(), notes: $("#aT").value.trim() }; if (id) Object.assign(S.apps.find((x) => x.id === id), v); else S.apps.push({ id: uid(), ...v }); save(); closeLayer(); toast("Candidature enregistrée"); if (location.hash !== "#candidatures") location.hash = "candidatures"; else rerender(); };
 }
 
 // ───────────────────────── Ranking ─────────────────────────
@@ -748,7 +829,7 @@ function bind(v) {
   };
   if (v === "entreprises") {
     const q = $("#q"); q.oninput = () => { search = q.value; const pos = q.selectionStart; rerender(); const n = $("#q"); n.focus(); n.setSelectionRange(pos, pos); };
-    $("#addRow").onsubmit = (e) => { e.preventDefault(); const n = $("#newRow").value.trim(); if (!n) return; if (S.rows.some((r) => rowName(r).toLowerCase() === n.toLowerCase())) return toast("Cette entreprise est déjà dans le tableau"); S.rows.push({ id: uid(), cells: { [primary().id]: { v: n } } }); save(); toast(`${n} ajoutée`); rerender(); };
+    $("#addRow").onsubmit = (e) => { e.preventDefault(); const n = $("#newRow").value.trim(); if (!n) return; const ne = orgNameError(n); if (ne) return toast(`« ${n.slice(0, 40)} » : ${ne}`); if (S.rows.some((r) => rowName(r).toLowerCase() === n.toLowerCase())) return toast("Cette entreprise est déjà dans le tableau"); S.rows.push({ id: uid(), cells: { [primary().id]: { v: n } } }); save(); toast(`${n} ajoutée`); rerender(); };
     const ce = $("#cellEdit");
     if (ce) { ce.focus(); ce.select?.(); const { r, f } = editing; let done = false;
       const commit = () => { if (done) return; done = true; const val = ce.value.trim(); const err = validate(S.fields.find((x) => x.id === f), val); editing = null; if (err) { toast(err); return rerender(); } const row = S.rows.find((x) => x.id === r); const before = row.cells[f]?.v ?? ""; if (String(before) === val) return rerender(); const fld = S.fields.find((x) => x.id === f); setCell(r, f, val); rerender(); toast(`${fld.name} mis à jour`, () => { setCell(r, f, before, { why: "Annulation" }); rerender(); }); };

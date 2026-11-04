@@ -6,7 +6,7 @@ import { requireUser } from "@/server/auth";
 import { requireContact, requireWorkspace } from "@/server/authz";
 import { action, AppError } from "@/server/errors";
 import { rateLimit } from "@/server/ratelimit";
-import { normalizeName, isUrl, normalizeUrl } from "@/lib/fields";
+import { normalizeName, isUrl, normalizeUrl, personNameError } from "@/lib/fields";
 import { scoreContact } from "@/lib/contactScore";
 import { generateMessages } from "@/server/messages";
 
@@ -19,7 +19,7 @@ async function editor(workspaceId: string) {
 const STAGES = ["DISCOVERED", "SHORTLISTED", "MESSAGE_DRAFTED", "CONTACTED", "RESPONDED", "CALL_SCHEDULED", "CALL_COMPLETED", "FOLLOW_UP", "REFERRAL"] as const;
 
 const ContactSchema = z.object({
-  fullName: z.string().trim().min(2).max(120),
+  fullName: z.string().trim().min(2).max(120).superRefine((v, ctx) => { const e = personNameError(v); if (e) ctx.addIssue({ code: "custom", message: e }); }),
   companyId: z.string().nullable().optional(),
   title: z.string().max(200).nullable().optional(),
   team: z.string().max(120).nullable().optional(),

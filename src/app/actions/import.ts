@@ -10,7 +10,7 @@ import { rateLimit } from "@/server/ratelimit";
 import { getObject, putObject } from "@/server/storage";
 import { mimeFor, validateUpload } from "@/server/files";
 import { cellToString, parseWorkbook, previewSheet, validateImport, type MappingColumn } from "@/server/spreadsheet";
-import { detectCurrency, domainOf, normalizeName, normalizeUrl, parseValue, slugKey, type FieldTypeName } from "@/lib/fields";
+import { detectCurrency, domainOf, normalizeName, normalizeUrl, orgNameError, parseValue, slugKey, type FieldTypeName } from "@/lib/fields";
 
 export async function uploadSpreadsheet(workspaceId: string, form: FormData) {
   return action(async () => {
@@ -84,7 +84,7 @@ export async function validateImportAction(workspaceId: string, fileId: string, 
     checkMapping(mapping);
     const { sheet } = await loadSheet(user.id, workspaceId, fileId, sheetName);
     const res = validateImport(sheet, headerRow, mapping);
-    return { ...res, issues: res.issues.slice(0, 300), issueCount: res.issues.length };
+    return { ...res, issues: res.issues.slice(0, 300), issueCount: res.issues.length, invalidNames: res.invalidNames.slice(0, 100), invalidNameCount: res.invalidNames.length };
   });
 }
 
@@ -96,6 +96,7 @@ const CommitSchema = z.object({
   targetDatasetId: z.string().nullable(),
   duplicates: z.enum(["skip", "keep"]),
   corrections: z.record(z.string(), z.string().max(5000)).default({}),
+  confirmEmployerList: z.boolean().default(false),
 });
 
 /**
@@ -109,6 +110,10 @@ export async function commitImport(workspaceId: string, input: unknown, mappingI
     const mapping = MappingSchema.parse(mappingInput);
     checkMapping(mapping);
     const { file, sheet } = await loadSheet(user.id, workspaceId, opts.fileId, opts.sheetName);
+    // Server-side guardrail: the same checks as the review step, so they cannot be bypassed
+    const check = validateImport(sheet, opts.headerRow, mapping);
+    if (check.blocked) throw new AppError(check.blocked, "INVALID");
+    if (check.needsConfirmation && !opts.confirmEmployerList) throw new AppError(`${check.needsConfirmation} Confirm that this file is a list of employers to continue.`, "INVALID");
     const included = mapping.filter((m) => m.include);
     const data = sheet.rows.slice(opts.headerRow + 1).slice(0, 5000);
 
@@ -175,7 +180,7 @@ export async function commitImport(workspaceId: string, input: unknown, mappingI
       const raw = (m: MappingColumn) => opts.corrections[`${rowNum}:${m.index}`] ?? r[m.index] ?? null;
       const name = cellToString(raw(primary) as never).trim();
       const key = normalizeName(name);
-      if (!key) {
+      if (!key || orgNameError(name)) {
         skipped++;
         continue;
       }
