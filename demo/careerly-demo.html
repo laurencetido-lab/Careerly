@@ -1,0 +1,637 @@
+<title>Careerly</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: app shell — fixed sidebar + working canvas; mirrors the real Careerly product UI */
+:root {
+  --bg: #ffffff; --panel: #f7f8fb; --card: #ffffff; --fg: #181b25; --muted: #5f6577; --line: #e3e6ee; --input: #d6dae5;
+  --accent: #4f46e5; --accent-fg: #ffffff; --accent-soft: #eef0fe; --accent-ink: #3b33b8;
+  --good: #1f8a5b; --warn: #b7791f; --bad: #d23c3c; --s1: #2a78d6; --s2: #eb6834;
+  --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12141b; --panel: #171a22; --card: #1a1d26; --fg: #eceef4; --muted: #9aa0b2; --line: #2a2e3b; --input: #353a4a;
+  --accent: #8b85f5; --accent-fg: #12141b; --accent-soft: #2a2950; --accent-ink: #c9c6ff;
+  --good: #4cc38a; --warn: #f0b040; --bad: #ef6b6b; --s1: #3987e5; --s2: #d95926; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12141b; --panel: #171a22; --card: #1a1d26; --fg: #eceef4; --muted: #9aa0b2; --line: #2a2e3b; --input: #353a4a;
+  --accent: #8b85f5; --accent-fg: #12141b; --accent-soft: #2a2950; --accent-ink: #c9c6ff;
+  --good: #4cc38a; --warn: #f0b040; --bad: #ef6b6b; --s1: #3987e5; --s2: #d95926; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.45; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100%; }
+.side { background: var(--panel); border-right: 1px solid var(--line); padding: 14px 12px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0; height: 100vh; }
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 650; letter-spacing: -0.01em; font-size: 15px; }
+.logo i { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; }
+.ws { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 8px 10px; font-weight: 550; font-size: 13px; }
+.ws small { display: block; color: var(--muted); font-weight: 400; }
+nav { display: flex; flex-direction: column; gap: 2px; }
+nav a { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 7px; color: var(--muted); text-decoration: none; font-size: 13.5px; }
+nav a:hover { background: var(--line); color: var(--fg); }
+nav a[aria-current="page"] { background: var(--card); color: var(--fg); font-weight: 600; box-shadow: 0 0 0 1px var(--line); }
+nav svg { width: 16px; height: 16px; flex: none; }
+.side .foot { margin-top: auto; font-size: 12px; color: var(--muted); display: grid; gap: 8px; }
+main { min-width: 0; padding-block: 22px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
+.banner { border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); background: color-mix(in srgb, var(--warn) 10%, var(--bg)); border-radius: var(--r); padding: 10px 14px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.banner b { font-weight: 600; }
+h1 { font-size: 21px; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
+h2 { font-size: 14px; margin: 0; }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 72ch; }
+.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: 2fr 1fr; } .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; min-width: 0; }
+.card h2 + p { color: var(--muted); font-size: 12.5px; margin: 3px 0 10px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--input); background: var(--card); cursor: pointer; font-weight: 550; font-size: 13px; white-space: nowrap; }
+.btn:hover { background: var(--panel); }
+.btn.pri { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+.btn.pri:hover { filter: brightness(1.06); }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.sm { height: 28px; padding: 0 9px; font-size: 12.5px; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+input.in, select.in, textarea.in { width: 100%; border: 1px solid var(--input); background: var(--bg); border-radius: 8px; padding: 7px 10px; min-height: 34px; }
+textarea.in { min-height: 70px; resize: vertical; }
+label.f { display: grid; gap: 5px; font-size: 12.5px; font-weight: 550; }
+label.f span.h { font-weight: 400; color: var(--muted); font-size: 12px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; padding: 2px 6px; font-size: 11px; font-weight: 600; background: var(--panel); color: var(--muted); border: 1px solid var(--line); white-space: nowrap; }
+.badge.ac { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; }
+.badge.good { color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); border-color: transparent; }
+.badge.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); border-color: transparent; }
+.badge.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); border-color: transparent; }
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+.empty { border: 1px dashed var(--input); border-radius: var(--r); padding: 28px 18px; text-align: center; color: var(--muted); }
+.empty b { color: var(--fg); display: block; margin-bottom: 4px; }
+/* table */
+.tablebox { overflow: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); max-height: 68vh; }
+table.t { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+.t th { position: sticky; top: 0; background: var(--panel); text-align: left; font-weight: 550; color: var(--muted); font-size: 12px; padding: 8px 10px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); white-space: nowrap; cursor: pointer; user-select: none; z-index: 1; }
+.t td { padding: 7px 10px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; min-width: 150px; max-width: 300px; }
+.t td.name { font-weight: 600; min-width: 170px; }
+.t td.cell { cursor: text; }
+.t td.cell:hover { background: var(--panel); }
+.t td .v { display: flex; gap: 6px; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.t td .v.unk { color: var(--muted); font-style: italic; }
+.t tr:last-child td { border-bottom: 0; }
+.t td input.in { min-height: 28px; padding: 3px 7px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+/* panel & modal */
+.scrim { position: fixed; inset: 0; background: rgb(10 12 20 / .45); z-index: 40; }
+.panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--card); border-left: 1px solid var(--line); z-index: 41; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-right: env(safe-area-inset-right, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.panel header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.panel .body { overflow: auto; padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
+.modal { position: fixed; z-index: 41; left: 50%; top: 50%; translate: -50% -50%; width: min(640px, calc(100% - 32px)); max-height: calc(100% - 40px); overflow: auto; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 14px; }
+.x { border: 0; background: transparent; cursor: pointer; padding: 4px 6px; border-radius: 6px; color: var(--muted); font-size: 18px; line-height: 1; }
+.x:hover { background: var(--panel); }
+.sec { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: grid; gap: 8px; }
+.sec .lab { font-size: 12px; color: var(--muted); font-weight: 550; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.ev { background: var(--panel); border-radius: 8px; padding: 9px 10px; font-size: 12.5px; display: grid; gap: 4px; }
+.ev blockquote { margin: 0; border-left: 2px solid var(--input); padding-left: 8px; font-style: italic; }
+.meta { color: var(--muted); font-size: 12px; }
+.toast { position: fixed; z-index: 60; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); background: var(--fg); color: var(--bg); border-radius: 10px; padding: 10px 14px; font-size: 13px; display: flex; gap: 12px; align-items: center; box-shadow: 0 8px 28px rgb(0 0 0 / .25); }
+.toast button { background: transparent; color: inherit; border: 1px solid currentColor; border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+/* boards */
+.board { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.col { flex: 0 0 230px; background: var(--panel); border-radius: var(--r); padding: 8px; display: grid; gap: 8px; align-content: start; min-height: 120px; }
+.col h3 { margin: 0; font-size: 12px; color: var(--muted); padding: 2px 4px; }
+.kcard { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; display: grid; gap: 5px; cursor: pointer; }
+.kcard:hover { border-color: var(--accent); }
+.kcard b { font-size: 13px; }
+.kcard select { font-size: 11.5px; padding: 2px 4px; border-radius: 6px; border: 1px solid var(--input); background: var(--bg); }
+.nba a { display: flex; gap: 10px; padding: 8px; border-radius: 8px; text-decoration: none; color: inherit; }
+.nba a:hover { background: var(--panel); }
+.nba .n { width: 20px; height: 20px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font-size: 11px; font-weight: 700; display: grid; place-items: center; flex: none; }
+.nba small { display: block; color: var(--muted); }
+.steps { display: flex; gap: 6px; flex-wrap: wrap; }
+.steps span { border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; font-size: 12.5px; color: var(--muted); }
+.steps span.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+.drop { border: 2px dashed var(--input); border-radius: var(--r); padding: 36px 16px; text-align: center; display: grid; gap: 8px; justify-items: center; }
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.bar { height: 8px; background: var(--panel); border-radius: 99px; overflow: hidden; flex: 1; }
+.bar i { display: block; height: 100%; background: var(--s1); border-radius: 99px; }
+.mobile-top { display: none; }
+.tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px; }
+.tabs button { border: 0; background: transparent; padding: 5px 10px; border-radius: 6px; cursor: pointer; color: var(--muted); }
+.tabs button[aria-pressed="true"] { background: var(--panel); color: var(--fg); font-weight: 600; }
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 50; transform: translateX(-105%); transition: transform .18s; height: 100%; padding-top: calc(14px + env(safe-area-inset-top, 0px)); padding-left: max(12px, env(safe-area-inset-left, 0px)); }
+  .side.open { transform: none; }
+  .mobile-top { display: flex; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; gap: 10px; align-items: center; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 8px; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  .g2, .g3, .g4 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .side { transition: none; } }
+</style>
+
+<div class="mobile-top"><button class="btn sm" id="menuBtn" aria-label="Ouvrir le menu">☰</button><b>Careerly</b></div>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="logo"><i><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 15.5 10 10l3 3 6-6" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Careerly</div>
+    <div class="ws" id="wsName"></div>
+    <nav id="nav"></nav>
+    <div class="foot">
+      <button class="btn sm" id="resetBtn">Réinitialiser la démo</button>
+      <span>Version de démonstration : vos saisies restent dans ce navigateur.</span>
+    </div>
+  </aside>
+  <main><div class="wrap" id="view"></div></main>
+</div>
+<div id="layer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+"use strict";
+// ───────────────────────── State ─────────────────────────
+const KEY = "careerly-demo-v1";
+const uid = () => Math.random().toString(36).slice(2, 10);
+const STAGES_APP = ["En recherche", "Intéressé", "Réseau", "Candidature envoyée", "Test en ligne", "Entretien", "Tour final", "Offre", "Acceptée", "Refusée"];
+const STAGES_NET = ["Découvert", "Présélectionné", "Message rédigé", "Contacté", "A répondu", "Appel prévu", "Appel fait", "Relance", "Recommandation"];
+const TYPES = { TEXT: "Texte", LONG: "Texte long", NUMBER: "Nombre", CURRENCY: "Montant", DATE: "Date", BOOL: "Oui / Non", SELECT: "Choix", URL: "Lien", AI: "Recherche IA" };
+const CONF = { VERIFIED: ["Vérifié", "good", "var(--good)", "Source officielle de l'entreprise"], REPORTED: ["Rapporté", "ac", "var(--accent)", "Source tierce publique"], ESTIMATED: ["Estimé", "warn", "var(--warn)", "Présenté comme estimation par la source"], CONFLICTING: ["Contradictoire", "bad", "var(--bad)", "Les sources se contredisent"] };
+
+function seed() {
+  const f = (name, type, extra = {}) => ({ id: uid(), name, type, ...extra });
+  const fields = [f("Société", "TEXT", { primary: true }), f("Site web", "URL"), f("Ville", "SELECT"),
+    f("Salaire analyste", "AI", { vt: "CURRENCY", prompt: "Salaire de base le plus récent d'un analyste junior au bureau de Paris. Distinguer fixe et bonus, indiquer l'année et les sources." }),
+    f("Programme graduate", "AI", { vt: "LONG", prompt: "L'employeur a-t-il un programme graduate accessible aux diplômés 2027 ? Liens officiels et dates limites vérifiées uniquement." })];
+  const rows = [["Ardian", "https://www.ardian.com"], ["Tikehau Capital", "https://www.tikehaucapital.com"], ["Eurazeo", "https://www.eurazeo.com"], ["PAI Partners", "https://www.paipartners.com"], ["Wendel", "https://www.wendelgroup.com"]]
+    .map(([n, u]) => ({ id: uid(), cells: { [fields[0].id]: { v: n }, [fields[1].id]: { v: u }, [fields[2].id]: { v: "Paris" } } }));
+  return {
+    ws: { name: "Investissement immobilier CDI 2027", objective: "Diplômé en juin 2027, je cherche un poste d'analyste en investissement bien rémunéré à Paris ou Londres, idéalement en private equity immobilier.", locations: ["Paris", "Londres"], roles: ["Analyste investissement"] },
+    fields, rows, contacts: [], apps: [], criteria: [], notes: [],
+  };
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY) || "null") || seed(); } catch { S = seed(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
+
+// ───────────────────────── Helpers ─────────────────────────
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const primary = () => S.fields.find((f) => f.primary);
+const rowName = (r) => r.cells[primary().id]?.v || "Sans nom";
+const vt = (f) => (f.type === "AI" ? f.vt || "TEXT" : f.type);
+const today = () => new Date().toISOString().slice(0, 10);
+function num(s) {
+  if (s == null) return null; let t = String(s).replace(/[\s €$£%]/g, "").replace(/EUR|USD|GBP/i, "");
+  let m = 1; if (/[kK]$/.test(t)) { m = 1e3; t = t.slice(0, -1); } else if (/[mM]$/.test(t)) { m = 1e6; t = t.slice(0, -1); }
+  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(t) || /^-?\d+,\d{1,2}$/.test(t)) t = t.replace(/\./g, "").replace(",", "."); else t = t.replace(/,/g, "");
+  return /^-?\d+(\.\d+)?$/.test(t) ? Number(t) * m : null;
+}
+function fmt(f, v) {
+  if (v == null || v === "") return "";
+  const t = vt(f);
+  if (t === "CURRENCY") { const n = num(v); return n == null ? String(v) : new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n); }
+  if (t === "NUMBER") { const n = num(v); return n == null ? String(v) : new Intl.NumberFormat("fr-FR").format(n); }
+  if (t === "BOOL") return /^(oui|yes|true|1|x)$/i.test(v) ? "Oui" : /^(non|no|false|0)$/i.test(v) ? "Non" : String(v);
+  if (t === "DATE") { const d = new Date(v); return isNaN(d) ? String(v) : d.toLocaleDateString("fr-FR"); }
+  return String(v);
+}
+function validate(f, v) {
+  if (v === "") return null; const t = vt(f);
+  if ((t === "NUMBER" || t === "CURRENCY") && num(v) == null) return `« ${v} » n'est pas un nombre`;
+  if (t === "URL" && !/^(https?:\/\/)?[^\s]+\.[a-z]{2,}/i.test(v)) return `« ${v} » n'est pas un lien valide`;
+  if (t === "BOOL" && !/^(oui|non|yes|no|true|false|1|0|x)$/i.test(v)) return "Répondez oui ou non";
+  if (t === "DATE" && isNaN(new Date(v))) return "Date non reconnue (AAAA-MM-JJ)";
+  return null;
+}
+function infer(vals, header) {
+  const v = vals.filter((x) => x !== null && x !== undefined && String(x).trim() !== "").map(String);
+  if (!v.length) return "TEXT"; const share = (p) => v.filter(p).length / v.length; const h = header.toLowerCase();
+  if (share((s) => /^(oui|non|yes|no|true|false)$/i.test(s.trim())) === 1) return "BOOL";
+  if (share((s) => /^(https?:\/\/|www\.)/.test(s)) >= 0.9) return "URL";
+  if (share((s) => /^\d{4}-\d{2}-\d{2}/.test(s) || /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) >= 0.9) return "DATE";
+  const ns = share((s) => num(s) !== null), money = /salaire|salary|bonus|rémunération|pay|compensation/.test(h);
+  if (ns >= 0.9) return money || share((s) => /[€$£]/.test(s)) > 0.5 ? "CURRENCY" : "NUMBER";
+  if (ns >= 0.6 && money) return "CURRENCY";
+  const d = new Set(v.map((s) => s.toLowerCase())); if (v.length >= 4 && d.size <= Math.max(3, v.length / 2) && d.size < v.length) return "SELECT";
+  if (share((s) => s.length > 120) > 0.3) return "LONG";
+  return "TEXT";
+}
+let toastTimer;
+function toast(msg, undo) {
+  const old = $(".toast"); if (old) old.remove(); clearTimeout(toastTimer);
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status");
+  t.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button type="button">Annuler</button>' : ""}`;
+  if (undo) t.querySelector("button").onclick = () => { undo(); t.remove(); };
+  document.body.appendChild(t); toastTimer = setTimeout(() => t.remove(), 4500);
+}
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); toast("Copié dans le presse-papiers"); }
+  catch { toast("Copie impossible ici : sélectionnez le texte et copiez-le avec Ctrl+C"); }
+}
+const ICON = {
+  accueil: '<path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  entreprises: '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M8 8h3M8 12h3M8 16h3M3 21h18"/>',
+  import: '<path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/>',
+  recherche: '<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>',
+  reseau: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 11a3 3 0 1 0 0-6M21 20c0-2.6-1.6-4.8-4-5.6"/>',
+  candidatures: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/>',
+  classement: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+};
+const NAV = [["accueil", "Accueil"], ["entreprises", "Entreprises"], ["import", "Importer un fichier"], ["recherche", "Recherche"], ["reseau", "Réseau"], ["candidatures", "Candidatures"], ["classement", "Classement"]];
+
+// ───────────────────────── Shell ─────────────────────────
+function shell() {
+  $("#wsName").innerHTML = `${esc(S.ws.name)}<small>${esc(S.ws.locations.join(", "))}</small>`;
+  const cur = location.hash.slice(1) || "accueil";
+  $("#nav").innerHTML = NAV.map(([k, l]) => `<a href="#${k}" ${k === cur ? 'aria-current="page"' : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}</a>`).join("");
+}
+const banner = `<div class="banner" role="note"><b>Démo</b><span>Les recherches Internet, l'IA et la découverte de contacts nécessitent la version complète avec ses clés API. Ici, tout le reste fonctionne avec ce que vous saisissez.</span></div>`;
+function route() {
+  shell(); closeLayer(); $("#side").classList.remove("open");
+  const v = location.hash.slice(1) || "accueil";
+  const fn = { accueil: viewHome, entreprises: viewTable, import: viewImport, recherche: viewResearch, reseau: viewNetwork, candidatures: viewApps, classement: viewRanking }[v] || viewHome;
+  $("#view").innerHTML = banner + fn(); bind(v); window.scrollTo(0, 0);
+}
+function rerender() { const y = window.scrollY; const v = location.hash.slice(1) || "accueil"; const fn = { accueil: viewHome, entreprises: viewTable, import: viewImport, recherche: viewResearch, reseau: viewNetwork, candidatures: viewApps, classement: viewRanking }[v] || viewHome; $("#view").innerHTML = banner + fn(); bind(v); shell(); window.scrollTo(0, y); }
+
+// ───────────────────────── Home ─────────────────────────
+function actions() {
+  const out = [];
+  const ai = S.fields.filter((f) => f.type === "AI");
+  const missing = ai.reduce((a, f) => a + S.rows.filter((r) => !r.cells[f.id]?.v).length, 0);
+  for (const c of S.contacts) for (const n of c.log || []) if (n.follow && !n.done) { const d = Math.ceil((new Date(n.follow) - new Date(today())) / 864e5); out.push({ p: d <= 0 ? 90 : 70 - d, t: `Relancer ${c.name}`, r: d <= 0 ? `Relance prévue le ${fmtD(n.follow)} : en retard.` : `Relance prévue dans ${d} jour${d > 1 ? "s" : ""}.`, h: "#reseau" }); }
+  for (const a of S.apps) if (a.deadline && STAGES_APP.indexOf(a.stage) < 3) { const d = Math.ceil((new Date(a.deadline) - new Date(today())) / 864e5); if (d >= 0 && d <= 21) out.push({ p: 95 - d * 3, t: `Envoyer la candidature : ${a.role} · ${a.company}`, r: `Date limite dans ${d} jour${d > 1 ? "s" : ""}, étape encore « ${a.stage} ».`, h: "#candidatures" }); }
+  const nc = S.contacts.find((c) => STAGES_NET.indexOf(c.stage) <= 1);
+  if (nc) out.push({ p: 55, t: `Contacter ${nc.name}${nc.company ? ` (${nc.company})` : ""}`, r: "Contact présélectionné à qui vous n'avez pas encore écrit.", h: "#reseau" });
+  if (missing) out.push({ p: 40, t: `Compléter ${missing} valeur${missing > 1 ? "s" : ""} à rechercher`, r: `${ai.length} colonne${ai.length > 1 ? "s" : ""} « recherche IA » encore vide${ai.length > 1 ? "s" : ""}. Ouvrez une entreprise pour ajouter une valeur avec sa source.`, h: "#entreprises" });
+  if (!S.contacts.length) out.push({ p: 35, t: "Ajouter une première personne à contacter", r: "Un analyste ou un ancien de votre école chez l'un de vos fonds cibles.", h: "#reseau" });
+  if (!S.apps.length) out.push({ p: 30, t: "Suivre une première candidature", r: "Ajoutez un poste visé, même au stade de la recherche.", h: "#candidatures" });
+  return out.sort((a, b) => b.p - a.p).slice(0, 5);
+}
+const fmtD = (d) => (d ? new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "");
+function viewHome() {
+  const a = actions();
+  const filled = S.fields.filter((f) => f.type === "AI").reduce((x, f) => x + S.rows.filter((r) => r.cells[f.id]?.v).length, 0);
+  return `
+  <div class="head"><div><p class="meta">Votre espace de recherche</p><h1>${esc(S.ws.name)}</h1><p class="sub">${esc(S.ws.objective)}</p>
+    <div class="row" style="margin-top:8px">${S.ws.locations.map((l) => `<span class="badge">${esc(l)}</span>`).join("")}${S.ws.roles.map((r) => `<span class="badge ac">${esc(r)}</span>`).join("")}</div></div>
+    <div class="row"><button class="btn" data-act="editws">Modifier l'objectif</button><a class="btn pri" href="#recherche">Nouvelle recherche</a></div></div>
+  <div class="grid g2">
+    <div class="card nba"><h2>Prochaines actions recommandées</h2><p>Classées à partir de vos dates limites, relances et données manquantes.</p>
+      ${a.map((x, i) => `<a href="${x.h}"><span class="n">${i + 1}</span><span><b>${esc(x.t)}</b><small>${esc(x.r)}</small></span></a>`).join("") || '<p class="meta">Rien d\'urgent.</p>'}</div>
+    <div class="card"><h2>En chiffres</h2><p>Ce que contient cet espace.</p>
+      <div class="grid" style="gap:10px">
+        ${[["Entreprises", S.rows.length, "#entreprises"], ["Valeurs sourcées", filled, "#entreprises"], ["Contacts", S.contacts.length, "#reseau"], ["Candidatures", S.apps.length, "#candidatures"]].map(([l, n, h]) => `<a href="${h}" class="row" style="justify-content:space-between;text-decoration:none;color:inherit"><span>${l}</span><b style="font-variant-numeric:tabular-nums">${n}</b></a>`).join("")}
+      </div></div>
+  </div>
+  <div class="card"><h2>Comment utiliser Careerly</h2><p>Le parcours en quatre temps, du plus simple au plus avancé.</p>
+    <div class="grid g4">
+      ${[["Entreprises", "Cliquez une cellule pour la modifier. Ouvrez une entreprise pour voir et ajouter des valeurs avec leur source.", "#entreprises"], ["Importer", "Déposez votre propre Excel ou CSV : Careerly détecte les colonnes et leurs types.", "#import"], ["Réseau", "Ajoutez une personne, générez un message en deux tons, notez vos échanges et relances.", "#reseau"], ["Candidatures", "Suivez chaque poste de « En recherche » à « Offre ».", "#candidatures"]].map(([t, d, h]) => `<a href="${h}" class="sec" style="text-decoration:none;color:inherit"><b>${t}</b><span class="meta">${d}</span></a>`).join("")}
+    </div></div>`;
+}
+
+// ───────────────────────── Table ─────────────────────────
+let sort = null, search = "", editing = null;
+function viewTable() {
+  let rows = S.rows.filter((r) => !search || Object.values(r.cells).some((c) => String(c.v ?? "").toLowerCase().includes(search.toLowerCase())));
+  if (sort) { const f = S.fields.find((x) => x.id === sort.id); rows = [...rows].sort((a, b) => { const x = a.cells[f.id]?.v ?? "", y = b.cells[f.id]?.v ?? ""; if (x === "" && y === "") return 0; if (x === "") return 1; if (y === "") return -1; const nx = num(x), ny = num(y); const r = nx != null && ny != null ? nx - ny : String(x).localeCompare(String(y), "fr", { numeric: true }); return sort.dir * r; }); }
+  return `
+  <div class="head"><div><h1>Entreprises</h1><p class="sub">Double-cliquez (ou Entrée) sur une cellule pour la modifier. Cliquez sur un nom pour voir les preuves et l'historique.</p></div>
+    <div class="row"><button class="btn" data-act="addfield">+ Champ</button><button class="btn" data-act="copycsv">Copier en CSV</button><button class="btn pri" data-act="research" data-scope="table">Rechercher les champs IA</button></div></div>
+  <div class="row"><input class="in" style="max-width:280px" id="q" placeholder="Rechercher dans le tableau" value="${esc(search)}" aria-label="Rechercher"><span class="meta" style="margin-left:auto">${rows.length} sur ${S.rows.length} lignes</span></div>
+  <div class="tablebox"><table class="t" aria-label="Entreprises"><thead><tr>${S.fields.map((f) => `<th data-sort="${f.id}" title="${esc(TYPES[f.type])}${f.prompt ? " · " + esc(f.prompt) : ""}">${f.type === "AI" ? "✦ " : ""}${esc(f.name)} ${sort?.id === f.id ? (sort.dir > 0 ? "↑" : "↓") : ""}</th>`).join("")}</tr></thead>
+  <tbody>${rows.map((r) => `<tr>${S.fields.map((f) => cellHtml(r, f)).join("")}</tr>`).join("")}</tbody></table></div>
+  <form class="row" id="addRow"><input class="in" style="max-width:280px" id="newRow" placeholder="+ Ajouter une entreprise" aria-label="Nouvelle entreprise"><button class="btn sm" type="submit">Ajouter</button></form>
+  <div class="legend">${Object.values(CONF).map(([l, , c, h]) => `<span title="${h}"><i class="dot" style="background:${c}"></i>${l}</span>`).join("")}<span>🔒 Confirmé par vous : jamais écrasé par une recherche</span></div>`;
+}
+function cellHtml(r, f) {
+  const c = r.cells[f.id] || {};
+  if (editing && editing.r === r.id && editing.f === f.id) {
+    const t = vt(f);
+    return `<td><input class="in" id="cellEdit" value="${esc(c.v ?? "")}" ${t === "DATE" ? 'type="date"' : ""} aria-label="${esc(f.name)}"></td>`;
+  }
+  if (f.primary) return `<td class="name"><a href="#entreprises" data-open="${r.id}" style="color:inherit;text-decoration:none">${esc(c.v || "Sans nom")}</a></td>`;
+  const conf = c.conf ? `<i class="dot" style="background:${CONF[c.conf][2]}" title="${CONF[c.conf][0]}"></i>` : "";
+  const shown = vt(f) === "URL" && c.v ? `<a href="${esc(/^https?:/.test(c.v) ? c.v : "https://" + c.v)}" target="_blank" rel="noopener noreferrer">${esc(String(c.v).replace(/^https?:\/\/(www\.)?/, ""))}</a>` : vt(f) === "SELECT" && c.v ? `<span class="badge ac">${esc(c.v)}</span>` : esc(fmt(f, c.v));
+  return `<td class="cell" tabindex="0" data-r="${r.id}" data-f="${f.id}"><div class="v ${!c.v && f.type === "AI" ? "unk" : ""}">${conf}${shown || (f.type === "AI" ? "À rechercher" : "")}${c.lock ? " 🔒" : ""}</div></td>`;
+}
+function setCell(rid, fid, v, extra = {}) {
+  const r = S.rows.find((x) => x.id === rid); const f = S.fields.find((x) => x.id === fid);
+  const prev = r.cells[fid] ? { ...r.cells[fid] } : null;
+  const c = r.cells[fid] || (r.cells[fid] = {});
+  if (String(c.v ?? "") !== String(v)) { c.hist = [...(c.hist || []), { from: c.v ?? "", to: v, at: new Date().toISOString(), why: extra.why || "Modifié par vous" }]; }
+  c.v = v; Object.assign(c, extra.cell || {}); if (!extra.cell) delete c.conf;
+  save(); return { r, f, prev };
+}
+
+// ───────────────────────── Row panel ─────────────────────────
+function openRow(rid) {
+  const r = S.rows.find((x) => x.id === rid); if (!r) return;
+  layer(`<div class="scrim" data-close></div><aside class="panel" role="dialog" aria-label="${esc(rowName(r))}"><header><div><h2 style="font-size:16px">${esc(rowName(r))}</h2><p class="meta">${esc(r.cells[S.fields[1]?.id]?.v || "")}</p></div><button class="x" data-close aria-label="Fermer">×</button></header>
+  <div class="body">
+    <div class="row"><button class="btn sm" data-act="research" data-scope="row" data-r="${r.id}">✦ Rechercher cette ligne</button><button class="btn sm" data-act="newapp" data-company="${esc(rowName(r))}">Suivre une candidature</button><button class="btn sm" data-act="newcontact" data-company="${esc(rowName(r))}">Ajouter un contact ici</button></div>
+    ${S.fields.filter((f) => !f.primary).map((f) => { const c = r.cells[f.id] || {}; return `
+    <section class="sec" aria-label="${esc(f.name)}">
+      <div class="lab"><span>${f.type === "AI" ? "✦ " : ""}${esc(f.name)} · ${TYPES[vt(f)]}</span><span class="row">${c.conf ? `<span class="badge ${CONF[c.conf][1]}">${CONF[c.conf][0]}</span>` : ""}${c.lock ? '<span class="badge">🔒 Confirmé</span>' : ""}</span></div>
+      <div>${c.v ? esc(fmt(f, c.v)) : `<i class="meta">${f.type === "AI" ? "Pas encore recherché" : "Vide"}</i>`}</div>
+      ${f.prompt ? `<div class="meta">Consigne : ${esc(f.prompt)}</div>` : ""}
+      ${(c.ev || []).map((e) => `<div class="ev"><a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${esc(e.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60))}</a><blockquote>“${esc(e.excerpt)}”</blockquote><span class="meta">${CONF[e.conf][0]} · ajouté par vous le ${new Date(e.at).toLocaleDateString("fr-FR")}${e.note ? " · " + esc(e.note) : ""}</span></div>`).join("")}
+      ${(c.hist || []).length ? `<details><summary class="meta" style="cursor:pointer">Historique (${c.hist.length})</summary>${c.hist.slice().reverse().map((h) => `<div class="meta">${new Date(h.at).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} : <s>${esc(fmt(f, h.from) || "vide")}</s> → <b>${esc(fmt(f, h.to) || "vide")}</b> · ${esc(h.why)}</div>`).join("")}</details>` : ""}
+      <div class="row"><button class="btn sm ghost" data-act="evid" data-r="${r.id}" data-f="${f.id}">+ Valeur avec sa source</button><button class="btn sm ghost" data-act="lock" data-r="${r.id}" data-f="${f.id}">${c.lock ? "Déverrouiller" : "🔒 Confirmer la valeur"}</button></div>
+    </section>`; }).join("")}
+    <button class="btn" data-act="delrow" data-r="${r.id}" style="justify-self:start;color:var(--bad)">Supprimer cette entreprise</button>
+  </div></aside>`);
+}
+function evidenceForm(rid, fid) {
+  const r = S.rows.find((x) => x.id === rid), f = S.fields.find((x) => x.id === fid);
+  layer(`<div class="scrim" data-close></div><form class="modal" id="evForm" role="dialog" aria-label="Ajouter une valeur"><div class="row" style="justify-content:space-between"><h2>${esc(f.name)} · ${esc(rowName(r))}</h2><button type="button" class="x" data-close aria-label="Fermer">×</button></div>
+    <p class="meta" style="margin:0">Recherche manuelle : notez ce que vous avez trouvé et où. La preuve reste attachée à la cellule.</p>
+    <label class="f">Valeur<input class="in" id="evV" required></label>
+    <label class="f">Lien de la source<input class="in" id="evU" required placeholder="https://www.ardian.com/careers"></label>
+    <label class="f">Extrait qui prouve la valeur<span class="h">Copiez la phrase exacte de la page.</span><textarea class="in" id="evE" required></textarea></label>
+    <label class="f">Fiabilité<select class="in" id="evC">${Object.entries(CONF).map(([k, [l, , , h]]) => `<option value="${k}" ${k === "REPORTED" ? "selected" : ""}>${l} : ${h.toLowerCase()}</option>`).join("")}</select></label>
+    <label class="f">Note (facultatif)<input class="in" id="evN" placeholder="Chiffre 2025, fixe uniquement"></label>
+    <p class="meta" id="evErr" style="color:var(--bad);margin:0"></p>
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Enregistrer avec la preuve</button></div></form>`);
+  $("#evForm").onsubmit = (e) => {
+    e.preventDefault(); const v = $("#evV").value.trim(), u = $("#evU").value.trim();
+    const err = validate(f, v) || (!/^(https?:\/\/)?[^\s]+\.[a-z]{2,}/i.test(u) ? "Le lien de la source n'est pas valide" : null);
+    if (err) return void ($("#evErr").textContent = err);
+    const conf = $("#evC").value;
+    const { r: row } = setCell(rid, fid, v, { why: "Recherche manuelle", cell: { conf } });
+    const c = row.cells[fid]; c.ev = [...(c.ev || []), { url: /^https?:/.test(u) ? u : "https://" + u, excerpt: $("#evE").value.trim(), conf, note: $("#evN").value.trim(), at: new Date().toISOString() }];
+    save(); toast("Valeur enregistrée avec sa preuve"); rerender(); openRow(rid);
+  };
+}
+function fieldForm() {
+  const presets = [["Salaire analyste", "CURRENCY", "Salaire de base le plus récent d'un analyste junior au bureau visé. Distinguer fixe et bonus."], ["Stage avec embauche", "LONG", "Les stages de fin d'études peuvent-ils déboucher sur un CDI ? Ne pas inventer de taux."], ["Postes ouverts", "LONG", "Postes juniors ouverts actuellement sur le site carrières officiel."], ["Parrainage visa", "BOOL", "L'employeur indique-t-il parrainer des visas de travail ?"]];
+  layer(`<div class="scrim" data-close></div><form class="modal" id="fForm" role="dialog" aria-label="Ajouter un champ"><div class="row" style="justify-content:space-between"><h2>Ajouter un champ</h2><button type="button" class="x" data-close aria-label="Fermer">×</button></div>
+    <div class="row">${presets.map((p, i) => `<button type="button" class="badge ac" style="cursor:pointer" data-preset="${i}">✦ ${p[0]}</button>`).join("")}</div>
+    <label class="f">Nom du champ<input class="in" id="fN" required></label>
+    <div class="grid g2" style="grid-template-columns:1fr 1fr"><label class="f">Type<select class="in" id="fT">${Object.entries(TYPES).map(([k, l]) => `<option value="${k}" ${k === "AI" ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+    <label class="f">Valeur recherchée (si IA)<select class="in" id="fV">${["TEXT", "LONG", "NUMBER", "CURRENCY", "DATE", "BOOL", "URL"].map((k) => `<option value="${k}">${TYPES[k]}</option>`).join("")}</select></label></div>
+    <label class="f">Que doit-on rechercher ?<span class="h">Écrivez-le comme une consigne à un analyste.</span><textarea class="in" id="fP"></textarea></label>
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Ajouter le champ</button></div></form>`);
+  document.querySelectorAll("[data-preset]").forEach((b) => (b.onclick = () => { const p = presets[+b.dataset.preset]; $("#fN").value = p[0]; $("#fT").value = "AI"; $("#fV").value = p[1]; $("#fP").value = p[2]; }));
+  $("#fForm").onsubmit = (e) => { e.preventDefault(); const name = $("#fN").value.trim(); if (S.fields.some((f) => f.name.toLowerCase() === name.toLowerCase())) return toast("Ce nom de champ existe déjà"); const t = $("#fT").value; S.fields.push({ id: uid(), name, type: t, vt: t === "AI" ? $("#fV").value : undefined, prompt: $("#fP").value.trim() || undefined }); save(); closeLayer(); toast(`Champ « ${name} » ajouté`); rerender(); };
+}
+function researchModal(scope, rid) {
+  const ai = S.fields.filter((f) => f.type === "AI"); const rows = scope === "row" ? 1 : S.rows.length;
+  const credits = rows * ai.length * 7;
+  layer(`<div class="scrim" data-close></div><div class="modal" role="dialog" aria-label="Plan de recherche"><div class="row" style="justify-content:space-between"><h2>Revoir le plan de recherche</h2><button class="x" data-close aria-label="Fermer">×</button></div>
+    <div class="row"><span class="badge ac">${scope === "row" ? "Une ligne" : "Tout le tableau"}</span><span class="badge">${rows} ligne${rows > 1 ? "s" : ""} × ${ai.length} champ${ai.length > 1 ? "s" : ""}</span></div>
+    <div class="banner"><span><b>Non disponible dans la démo.</b> Dans la version complète, Careerly lance ici de vraies recherches Internet, lit les pages officielles et ne garde que les valeurs prouvées par un extrait exact. En attendant, ouvrez une entreprise et utilisez « + Valeur avec sa source ».</span></div>
+    ${ai.map((f) => `<div class="sec"><b>${esc(f.name)}</b><span class="meta">Consigne : ${esc(f.prompt || "Trouver " + f.name)}</span><span class="meta" style="font-family:var(--mono);font-size:11.5px">Requêtes : « {entreprise} ${esc(f.name)} ${esc(S.ws.locations[0] || "")} » · « {entreprise} ${esc(f.name)} ${new Date().getFullYear()} »</span></div>`).join("") || '<p class="meta">Aucun champ « Recherche IA ». Ajoutez-en un avec « + Champ ».</p>'}
+    <div class="grid g3" style="grid-template-columns:repeat(3,1fr)"><div class="sec"><span class="meta">Coût estimé (maximum)</span><b style="font-size:18px">${credits} crédits</b></div><div class="sec"><span class="meta">Disponible ce mois</span><b style="font-size:18px">500</b></div><div class="sec"><span class="meta">Budget approuvé</span><b style="font-size:18px">${Math.min(credits, 500)}</b></div></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn ghost" data-close>Fermer</button><button class="btn pri" disabled title="Nécessite la version complète">Approuver et lancer</button></div></div>`);
+}
+
+// ───────────────────────── Import ─────────────────────────
+let imp = null;
+function viewImport() {
+  if (!imp) return `<div class="head"><div><h1>Importer un fichier</h1><p class="sub">Déposez votre liste d'employeurs. Toutes les colonnes sont gardées, même celles que Careerly ne connaît pas.</p></div></div>
+    <div class="steps"><span class="on">1 · Fichier</span><span>2 · Colonnes</span><span>3 · Vérification</span></div>
+    <label class="drop" id="drop"><b>Déposez un fichier Excel ou CSV</b><span class="meta">.xlsx, .xls ou .csv · le fichier reste dans votre navigateur</span><input type="file" id="file" accept=".xlsx,.xls,.csv" style="max-width:260px"></label>`;
+  if (imp.step === 2) return `<div class="head"><div><h1>Importer « ${esc(imp.file)} »</h1><p class="sub">Vérifiez le type détecté de chaque colonne et indiquez celle qui contient le nom de l'employeur.</p></div></div>
+    <div class="steps"><span>1 · Fichier</span><span class="on">2 · Colonnes</span><span>3 · Vérification</span></div>
+    <div class="row">${imp.sheets.length > 1 ? `<label class="f" style="min-width:200px">Feuille<select class="in" id="sheet">${imp.sheets.map((s) => `<option ${s === imp.sheet ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></label>` : ""}<span class="meta">${imp.data.length} lignes détectées · ligne d'en-tête ${imp.headerRow + 1}</span></div>
+    <div class="tablebox"><table class="t"><thead><tr><th>Garder</th><th>Nom de colonne</th><th>Type</th><th>Rôle</th><th>Exemples</th></tr></thead><tbody>
+    ${imp.map.map((m, i) => `<tr><td><input type="checkbox" data-mk="${i}" ${m.keep ? "checked" : ""} aria-label="Garder ${esc(m.name)}"></td><td><input class="in" data-mn="${i}" value="${esc(m.name)}" aria-label="Nom"></td><td><select class="in" data-mt="${i}" aria-label="Type de ${esc(m.name)}">${Object.entries(TYPES).filter(([k]) => k !== "AI").map(([k, l]) => `<option value="${k}" ${k === m.type ? "selected" : ""}>${l}</option>`).join("")}</select></td><td><select class="in" data-mr="${i}" aria-label="Rôle"><option value="">Champ personnalisé</option><option value="name" ${m.role === "name" ? "selected" : ""}>Nom de l'employeur</option></select></td><td class="meta">${esc(imp.data.map((r) => r[m.idx]).filter((x) => x !== null && x !== "").slice(0, 3).join(" · "))}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="row" style="justify-content:space-between"><button class="btn ghost" data-act="impcancel">Annuler</button><button class="btn pri" data-act="impcheck">Vérifier les données</button></div>`;
+  const v = imp.check;
+  return `<div class="head"><div><h1>Vérification</h1><p class="sub">Corrigez une valeur ici, ou revenez changer le type de colonne. Les valeurs restées invalides sont importées vides.</p></div></div>
+    <div class="steps"><span>1 · Fichier</span><span>2 · Colonnes</span><span class="on">3 · Vérification</span></div>
+    <div class="row"><span class="badge ac">${imp.data.length} lignes</span><span class="badge ${v.issues.length ? "warn" : "good"}">${v.issues.length} valeur${v.issues.length > 1 ? "s" : ""} à corriger</span><span class="badge ${v.dups.length ? "warn" : "good"}">${v.dups.length} doublon${v.dups.length > 1 ? "s" : ""}</span></div>
+    ${v.dups.length ? `<div class="card"><h2>Doublons</h2><p>${v.dups.map((d) => `Ligne ${d.row} : « ${esc(d.v)} » répète la ligne ${d.first}`).join(" · ")}</p><label class="row"><input type="checkbox" id="skipDup" checked> Garder la première occurrence, ignorer les répétitions</label></div>` : ""}
+    ${v.issues.length ? `<div class="tablebox"><table class="t"><tbody>${v.issues.map((x, i) => `<tr><td class="meta">Ligne ${x.row}</td><td>${esc(x.col)}</td><td style="color:var(--bad)">${esc(x.msg)}</td><td><input class="in" data-fix="${i}" placeholder="Valeur corrigée" aria-label="Corriger ligne ${x.row}"></td></tr>`).join("")}</tbody></table></div>` : ""}
+    <div class="row" style="justify-content:space-between"><button class="btn ghost" data-act="impback">Retour</button><button class="btn pri" data-act="impgo">Importer</button></div>`;
+}
+function loadWorkbook(file) {
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const wb = XLSX.read(new Uint8Array(rd.result), { type: "array", cellDates: true, cellFormula: false, cellHTML: false });
+      imp = { file: file.name, wb, sheets: wb.SheetNames, step: 2 }; pickSheet(wb.SheetNames[0]); location.hash = "import"; rerender();
+    } catch { toast("Ce fichier n'a pas pu être lu comme un tableur"); }
+  };
+  rd.readAsArrayBuffer(file);
+}
+function pickSheet(name) {
+  const rows = XLSX.utils.sheet_to_json(imp.wb.Sheets[name], { header: 1, raw: true, defval: null, blankrows: false }).map((r) => r.map((c) => (c instanceof Date ? c.toISOString().slice(0, 10) : c)));
+  let h = 0; for (let i = 0; i < Math.min(8, rows.length - 1); i++) { const f = rows[i].filter((c) => c !== null && c !== ""); const w = Math.max(...rows.slice(i + 1, i + 5).map((x) => x.filter((c) => c !== null && c !== "").length), 0); if (f.length && f.every((c) => typeof c === "string") && f.length >= Math.floor(w * 0.6)) { h = i; break; } }
+  const head = rows[h] || []; const data = rows.slice(h + 1).slice(0, 2000);
+  const width = Math.max(head.length, ...data.slice(0, 30).map((r) => r.length));
+  const map = []; for (let c = 0; c < width; c++) { const name = String(head[c] ?? "").trim() || `Colonne ${c + 1}`; const vals = data.map((r) => r[c]); if (vals.every((x) => x === null) && !head[c]) continue; map.push({ idx: c, name, type: infer(vals, name), keep: true, role: "" }); }
+  const nm = map.find((m) => /^(société|societe|entreprise|company|employer|employeur|fonds|fund|firm|nom|name)$/i.test(m.name)) || map.find((m) => m.type === "TEXT"); if (nm) nm.role = "name";
+  Object.assign(imp, { sheet: name, headerRow: h, data, map, fix: {} });
+}
+function checkImport() {
+  const kept = imp.map.filter((m) => m.keep); const nm = kept.find((m) => m.role === "name");
+  if (!nm) return toast("Choisissez la colonne qui contient le nom de l'employeur"), false;
+  const issues = [], dups = [], seen = new Map();
+  imp.data.forEach((r, i) => { const row = imp.headerRow + 2 + i;
+    for (const m of kept) { if (m.role === "name") continue; const v = r[m.idx]; if (v === null || v === "") continue; const err = validate({ type: m.type }, String(v)); if (err) issues.push({ row, col: m.name, msg: err, idx: m.idx, i }); }
+    const k = String(r[nm.idx] ?? "").trim().toLowerCase(); if (!k) return; if (seen.has(k)) dups.push({ row, first: seen.get(k), v: r[nm.idx] }); else seen.set(k, row); });
+  imp.check = { issues, dups }; imp.step = 3; return true;
+}
+function commitImport() {
+  const kept = imp.map.filter((m) => m.keep); const nm = kept.find((m) => m.role === "name");
+  document.querySelectorAll("[data-fix]").forEach((el) => { if (el.value.trim()) { const x = imp.check.issues[+el.dataset.fix]; imp.data[x.i][x.idx] = el.value.trim(); } });
+  const skip = $("#skipDup") ? $("#skipDup").checked : true;
+  const fmap = new Map(); fmap.set(nm.idx, primary().id);
+  for (const m of kept) { if (m === nm) continue; let f = S.fields.find((x) => x.name.toLowerCase() === m.name.toLowerCase()); if (!f) { f = { id: uid(), name: m.name, type: m.type }; S.fields.push(f); } fmap.set(m.idx, f.id); }
+  const exist = new Map(S.rows.map((r) => [rowName(r).toLowerCase(), r])); let added = 0, updated = 0, empty = 0; const seen = new Set();
+  for (const r of imp.data) { const n = String(r[nm.idx] ?? "").trim(); if (!n) continue; const k = n.toLowerCase(); if (seen.has(k) && skip) continue; seen.add(k);
+    let row = skip ? exist.get(k) : null; if (row) updated++; else { row = { id: uid(), cells: {} }; S.rows.push(row); exist.set(k, row); added++; }
+    for (const m of kept) { const v = r[m.idx]; if (v === null || v === "") continue; const f = S.fields.find((x) => x.id === fmap.get(m.idx)); if (m !== nm && validate(f, String(v))) { empty++; continue; } if (row.cells[f.id]?.lock) continue; row.cells[f.id] = { ...(row.cells[f.id] || {}), v: String(v) }; } }
+  save(); imp = null; toast(`Import terminé : ${added} nouvelles lignes, ${updated} mises à jour${empty ? `, ${empty} valeurs invalides laissées vides` : ""}`); location.hash = "entreprises";
+}
+
+// ───────────────────────── Research hub ─────────────────────────
+function viewResearch() {
+  return `<div class="head"><div><h1>Recherche</h1><p class="sub">Décrivez ce que vous cherchez. Careerly propose un plan ; rien ne se lance sans votre accord et votre budget.</p></div></div>
+  <div class="grid g3">${[["Découvrir des employeurs", "Trouver des employeurs qui correspondent à votre objectif."], ["Trouver des offres", "Postes ouverts, programmes graduate, stages."], ["Trouver des professionnels", "Profils publics chez un employeur cible."]].map(([t, d], i) => `<button class="card" style="text-align:left;cursor:pointer" data-act="discover" data-k="${i}"><b>${t}</b><p class="meta" style="margin:4px 0 0">${d}</p></button>`).join("")}</div>
+  <div class="card"><h2>Ce que fait la version complète</h2><p>Pour chaque question, Careerly :</p>
+    <ol style="margin:0;padding-left:18px;display:grid;gap:6px">
+      <li>génère des requêtes ciblées (en français et en anglais) ;</li>
+      <li>interroge un moteur de recherche (Tavily ou Brave) et classe les sources : site officiel d'abord, puis presse reconnue, puis plateformes de salaires ;</li>
+      <li>lit les pages autorisées et fait extraire la réponse par Claude ;</li>
+      <li>rejette toute valeur qui n'apparaît pas mot pour mot dans la page. « Vérifié » n'est possible qu'avec une source officielle ;</li>
+      <li>enregistre la valeur, l'extrait, le lien, les dates et l'ancienne valeur, et vous prévient si elle change lors de la veille hebdomadaire.</li>
+    </ol></div>`;
+}
+
+// ───────────────────────── Network ─────────────────────────
+function viewNetwork() {
+  return `<div class="head"><div><h1>Réseau</h1><p class="sub">Les personnes à contacter, vos messages et vos échanges. Faites passer une carte d'étape avec le menu.</p></div><button class="btn pri" data-act="newcontact">+ Ajouter un contact</button></div>
+  ${S.contacts.length ? `<div class="board">${STAGES_NET.map((st) => { const cs = S.contacts.filter((c) => c.stage === st); return `<div class="col"><h3>${st} · ${cs.length}</h3>${cs.map((c) => `<div class="kcard" data-contact="${c.id}"><b>${esc(c.name)}</b><span class="meta">${esc(c.title || "Poste non renseigné")}</span><span class="meta">${esc(c.company || "")}</span><select data-cstage="${c.id}" aria-label="Étape">${STAGES_NET.map((s) => `<option ${s === c.stage ? "selected" : ""}>${s}</option>`).join("")}</select></div>`).join("")}</div>`; }).join("")}</div>`
+  : `<div class="empty"><b>Aucun contact pour l'instant</b>Ajoutez une personne que vous connaissez ou que vous avez repérée chez l'un de vos fonds. La version complète peut aussi en trouver dans les sources publiques.<div style="margin-top:12px"><button class="btn pri" data-act="newcontact">+ Ajouter un contact</button></div></div>`}`;
+}
+function contactForm(company = "") {
+  layer(`<div class="scrim" data-close></div><form class="modal" id="cForm" role="dialog" aria-label="Nouveau contact"><div class="row" style="justify-content:space-between"><h2>Ajouter un contact</h2><button type="button" class="x" data-close aria-label="Fermer">×</button></div>
+    <div class="grid" style="grid-template-columns:1fr 1fr"><label class="f">Nom complet<input class="in" id="cN" required></label><label class="f">Employeur<input class="in" id="cC" list="cos" value="${esc(company)}"><datalist id="cos">${S.rows.map((r) => `<option>${esc(rowName(r))}</option>`).join("")}</datalist></label>
+    <label class="f">Poste<input class="in" id="cT" placeholder="Analyste investissement"></label><label class="f">Ville<input class="in" id="cL" placeholder="Paris"></label></div>
+    <label class="f">École en commun<span class="h">Seulement si vous le savez. Careerly ne le devine jamais.</span><input class="in" id="cA"></label>
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Ajouter</button></div></form>`);
+  $("#cForm").onsubmit = (e) => { e.preventDefault(); const c = { id: uid(), name: $("#cN").value.trim(), company: $("#cC").value.trim(), title: $("#cT").value.trim(), city: $("#cL").value.trim(), alumni: $("#cA").value.trim(), stage: "Présélectionné", log: [], drafts: [] }; S.contacts.push(c); save(); location.hash = "reseau"; rerender(); openContact(c.id); };
+}
+function score(c) {
+  const r = []; let s = 0; const roleW = S.ws.roles.join(" ").toLowerCase().split(/\W+/).filter((w) => w.length > 3);
+  if (roleW.some((w) => (c.title || "").toLowerCase().includes(w))) { s += 30; r.push("Poste proche de votre cible"); }
+  if (c.city && S.ws.locations.some((l) => c.city.toLowerCase().includes(l.toLowerCase()))) { s += 20; r.push(`Basé à ${c.city}`); }
+  if (/analyst|analyste|associate|junior/i.test(c.title || "")) { s += 20; r.push("Profil junior : idéal pour le quotidien du poste"); }
+  if (/rh|recrut|talent|hr/i.test(c.title || "")) { s += 15; r.push("Recrutement : connaît le processus"); }
+  if (c.alumni) { s += 20; r.push(`Même école (confirmé par vous) : ${c.alumni}`); }
+  if ((c.log || []).length) { s += 10; r.push("Relation déjà engagée"); }
+  return { s: Math.min(100, s), r };
+}
+function draft(c, purpose, tone) {
+  const first = c.name.split(" ")[0]; const at = c.company ? ` chez ${c.company}` : ""; const role = c.title ? `votre rôle de ${c.title}${at}` : `votre parcours${at}`;
+  const shared = c.alumni ? ` Nous avons tous les deux étudié à ${c.alumni}.` : ""; const goal = S.ws.objective.split(/[.!?]/)[0];
+  const T = {
+    connexion: [`Bonjour ${first}, je m'intéresse aux métiers de l'investissement${at}.${shared} J'aimerais échanger avec vous sur ${role}.`, `Bonjour ${first}, votre parcours${at} m'a interpellé.${shared} Seriez-vous d'accord pour que nous soyons en contact ?`],
+    appel: [`Bonjour ${first},\n\n${goal}. Auriez-vous 15 minutes dans les semaines à venir pour me parler de ${role} ? Votre regard me serait précieux.\n\nMerci,`, `Bonjour ${first},\n\nMerci pour la connexion.${shared} J'aimerais beaucoup avoir votre retour sur ${role}. Pourrions-nous échanger 15 minutes quand cela vous arrange ?\n\nBien à vous,`],
+    relance: [`Bonjour ${first},\n\nJe me permets de revenir vers vous suite à mon précédent message. Si un appel n'est pas possible, un conseil sur ${role} me serait très utile.\n\nMerci,`, `Bonjour ${first}, je relance simplement mon message, sans aucune pression. 15 minutes quand cela vous convient me feraient très plaisir.`],
+    merci: [`Bonjour ${first},\n\nMerci d'avoir pris le temps d'échanger avec moi. Vos conseils sur ${role} m'ont été très utiles.\n\nBien cordialement,`, `Bonjour ${first}, merci encore pour notre échange, il m'a vraiment aidé. Je vous tiendrai au courant de la suite.`],
+    reco: [`Bonjour ${first},\n\nMerci encore pour votre aide. Je candidate${at} et me demandais si vous accepteriez de me recommander. Je peux vous envoyer mon CV et un court résumé.\n\nBien cordialement,`, `Bonjour ${first}, j'ai décidé de candidater${at}. Accepteriez-vous de me recommander ? Je comprendrai tout à fait si ce n'est pas possible.`],
+  };
+  const t = T[purpose][tone === "pro" ? 0 : 1]; return purpose === "connexion" ? t.slice(0, 300) : t;
+}
+function openContact(id) {
+  const c = S.contacts.find((x) => x.id === id); if (!c) return; const sc = score(c);
+  layer(`<div class="scrim" data-close></div><aside class="panel" role="dialog" aria-label="${esc(c.name)}"><header><div><h2 style="font-size:16px">${esc(c.name)}</h2><p class="meta">${esc([c.title || "Poste non renseigné", c.company, c.city].filter(Boolean).join(" · "))}</p><div class="row" style="margin-top:6px"><span class="badge ac">Pertinence ${sc.s}/100</span>${c.alumni ? `<span class="badge good">Même école</span>` : ""}</div></div><button class="x" data-close aria-label="Fermer">×</button></header>
+  <div class="body">
+    <div class="sec"><div class="lab">Pourquoi cette personne</div><span>${esc(sc.r.join(" · ") || "Ajoutée par vous.")}</span><span class="meta">Pas de « probabilité de réponse » : seulement des raisons vérifiables.</span></div>
+    <div class="sec"><div class="lab">Rédiger un message</div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px"><label class="f">Objet<select class="in" id="mP"><option value="connexion">Demande de connexion LinkedIn</option><option value="appel">Demande d'appel de 15 min</option><option value="relance">Relance</option><option value="merci">Remerciement</option><option value="reco">Demande de recommandation</option></select></label>
+      <label class="f">Ton<span class="tabs" role="group" aria-label="Ton"><button type="button" data-tone="pro" aria-pressed="true">Professionnel</button><button type="button" data-tone="chaleureux" aria-pressed="false">Chaleureux</button></span></label></div>
+      <textarea class="in" id="mB" rows="7" aria-label="Message"></textarea>
+      <div class="row" style="justify-content:space-between"><span class="meta" id="mCount"></span><span class="row"><button class="btn sm" id="mCopy">Copier</button><button class="btn sm pri" id="mSave">Enregistrer</button></span></div>
+      <span class="meta">Modèle rempli uniquement avec des faits connus. La version complète le fait rédiger par Claude à partir de votre profil confirmé. Rien n'est envoyé automatiquement.</span></div>
+    <div class="sec"><div class="lab">Noter un échange</div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px"><label class="f">Type<select class="in" id="lT"><option>Appel</option><option>Café</option><option>Message envoyé</option><option>E-mail envoyé</option><option>Recommandation</option></select></label><label class="f">Date<input class="in" type="date" id="lD" value="${today()}"></label></div>
+      <label class="f">Ce que vous avez appris<textarea class="in" id="lS"></textarea></label>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px"><label class="f">Info salaire (privée)<input class="in" id="lSal"></label><label class="f">Relance le<input class="in" type="date" id="lF"></label></div>
+      <button class="btn sm" id="lSave" style="justify-self:start">Enregistrer l'échange</button></div>
+    <div class="sec"><div class="lab">Historique</div>${[...(c.log || []).map((l, i) => `<div class="ev"><b>${esc(l.type)} · ${new Date(l.date).toLocaleDateString("fr-FR")}</b>${l.sum ? `<span>${esc(l.sum)}</span>` : ""}${l.sal ? `<span class="meta">Salaire (privé) : ${esc(l.sal)}</span>` : ""}${l.follow ? `<span class="row meta">Relance le ${new Date(l.follow).toLocaleDateString("fr-FR")} ${l.done ? "· faite" : `<button class="btn sm" data-done="${i}">Marquer faite</button>`}</span>` : ""}</div>`), ...(c.drafts || []).map((d) => `<div class="ev" style="border:1px dashed var(--input);background:transparent"><span class="meta">Brouillon enregistré · ${new Date(d.at).toLocaleDateString("fr-FR")}</span><span style="white-space:pre-line">${esc(d.body)}</span></div>`)].join("") || '<span class="meta">Aucun échange pour l\'instant.</span>'}</div>
+    <button class="btn" data-act="delcontact" data-c="${c.id}" style="justify-self:start;color:var(--bad)">Supprimer ce contact</button>
+  </div></aside>`);
+  let tone = "pro"; const upd = () => { $("#mB").value = draft(c, $("#mP").value, tone); cnt(); };
+  const cnt = () => { const l = $("#mB").value.length; $("#mCount").textContent = $("#mP").value === "connexion" ? `${l} / 300 caractères` : `${l} caractères`; $("#mCount").style.color = $("#mP").value === "connexion" && l > 300 ? "var(--bad)" : ""; };
+  $("#mP").onchange = upd; $("#mB").oninput = cnt; document.querySelectorAll("[data-tone]").forEach((b) => (b.onclick = () => { tone = b.dataset.tone; document.querySelectorAll("[data-tone]").forEach((x) => x.setAttribute("aria-pressed", x === b)); upd(); })); upd();
+  $("#mCopy").onclick = () => copy($("#mB").value);
+  $("#mSave").onclick = () => { c.drafts.push({ body: $("#mB").value, at: new Date().toISOString() }); if (STAGES_NET.indexOf(c.stage) < 2) c.stage = "Message rédigé"; save(); toast("Brouillon enregistré"); rerender(); openContact(c.id); };
+  $("#lSave").onclick = () => { c.log.push({ type: $("#lT").value, date: $("#lD").value || today(), sum: $("#lS").value.trim(), sal: $("#lSal").value.trim(), follow: $("#lF").value || null, done: false }); const t = $("#lT").value; const next = t === "Appel" || t === "Café" ? "Appel fait" : t === "Recommandation" ? "Recommandation" : "Contacté"; if (STAGES_NET.indexOf(next) > STAGES_NET.indexOf(c.stage)) c.stage = $("#lF").value ? "Relance" : next; save(); toast("Échange enregistré"); rerender(); openContact(c.id); };
+  document.querySelectorAll("[data-done]").forEach((b) => (b.onclick = () => { c.log[+b.dataset.done].done = true; save(); openContact(c.id); }));
+}
+
+// ───────────────────────── Applications ─────────────────────────
+function viewApps() {
+  return `<div class="head"><div><h1>Candidatures</h1><p class="sub">Chaque poste visé, de la recherche à l'offre. Cliquez une carte pour la détailler.</p></div><button class="btn pri" data-act="newapp">+ Nouvelle candidature</button></div>
+  ${S.apps.length ? `<div class="board">${STAGES_APP.map((st) => { const as = S.apps.filter((a) => a.stage === st); return `<div class="col"><h3>${st} · ${as.length}</h3>${as.map((a) => `<div class="kcard" data-app="${a.id}"><b>${esc(a.role)}</b><span class="meta">${esc(a.company || "")}</span>${a.deadline ? `<span class="badge warn">Limite ${fmtD(a.deadline)}</span>` : ""}${a.next ? `<span class="meta">→ ${esc(a.next)}</span>` : ""}<select data-astage="${a.id}" aria-label="Étape">${STAGES_APP.map((s) => `<option ${s === a.stage ? "selected" : ""}>${s}</option>`).join("")}</select></div>`).join("")}</div>`; }).join("")}</div>`
+  : `<div class="empty"><b>Aucune candidature suivie</b>Ajoutez un poste, même s'il n'est encore qu'une idée.<div style="margin-top:12px"><button class="btn pri" data-act="newapp">+ Nouvelle candidature</button></div></div>`}`;
+}
+function appForm(id, company = "") {
+  const a = S.apps.find((x) => x.id === id) || { role: "", company, stage: "Intéressé", deadline: "", url: "", next: "", notes: "" };
+  layer(`<div class="scrim" data-close></div><form class="modal" id="aForm" role="dialog" aria-label="Candidature"><div class="row" style="justify-content:space-between"><h2>${id ? "Modifier la candidature" : "Nouvelle candidature"}</h2><button type="button" class="x" data-close aria-label="Fermer">×</button></div>
+    <div class="grid" style="grid-template-columns:1fr 1fr"><label class="f">Poste<input class="in" id="aR" required value="${esc(a.role)}" placeholder="Analyste investissement immobilier"></label><label class="f">Employeur<input class="in" id="aC" list="cos2" value="${esc(a.company)}"><datalist id="cos2">${S.rows.map((r) => `<option>${esc(rowName(r))}</option>`).join("")}</datalist></label>
+    <label class="f">Étape<select class="in" id="aS">${STAGES_APP.map((s) => `<option ${s === a.stage ? "selected" : ""}>${s}</option>`).join("")}</select></label><label class="f">Date limite<input class="in" type="date" id="aD" value="${esc(a.deadline)}"></label>
+    <label class="f">Lien de l'offre<input class="in" id="aU" value="${esc(a.url)}"></label><label class="f">Prochaine action<input class="in" id="aN" value="${esc(a.next)}" placeholder="Envoyer le CV"></label></div>
+    <label class="f">Notes (tests, entretiens, retours)<textarea class="in" id="aT">${esc(a.notes)}</textarea></label>
+    <div class="row" style="justify-content:space-between">${id ? `<button type="button" class="btn ghost" data-act="delapp" data-a="${id}" style="color:var(--bad)">Supprimer</button>` : "<span></span>"}<span class="row"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Enregistrer</button></span></div></form>`);
+  $("#aForm").onsubmit = (e) => { e.preventDefault(); const v = { role: $("#aR").value.trim(), company: $("#aC").value.trim(), stage: $("#aS").value, deadline: $("#aD").value, url: $("#aU").value.trim(), next: $("#aN").value.trim(), notes: $("#aT").value.trim() }; if (id) Object.assign(S.apps.find((x) => x.id === id), v); else S.apps.push({ id: uid(), ...v }); save(); closeLayer(); toast("Candidature enregistrée"); if (location.hash !== "#candidatures") location.hash = "candidatures"; else rerender(); };
+}
+
+// ───────────────────────── Ranking ─────────────────────────
+function viewRanking() {
+  const numeric = S.fields.filter((f) => ["NUMBER", "CURRENCY", "BOOL"].includes(vt(f)));
+  const crit = S.criteria.filter((c) => numeric.some((f) => f.id === c.f)); const total = crit.reduce((a, c) => a + c.w, 0) || 1;
+  const ranges = Object.fromEntries(crit.map((c) => { const ns = S.rows.map((r) => valNum(r, c.f)).filter((n) => n != null); return [c.f, [Math.min(...ns), Math.max(...ns)]]; }));
+  const res = S.rows.map((r) => { let got = 0, sum = 0; for (const c of crit) { const n = valNum(r, c.f); if (n == null) continue; const [mi, ma] = ranges[c.f]; let x = vt(S.fields.find((f) => f.id === c.f)) === "BOOL" ? n : ma === mi ? 1 : (n - mi) / (ma - mi); if (c.dir === "low") x = 1 - x; got += c.w; sum += x * c.w; } return { r, score: got ? (sum / got) * 100 : null, comp: got / total }; })
+    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  return `<div class="head"><div><h1>Classement</h1><p class="sub">Vos critères, vos poids. Une donnée manquante n'est jamais devinée : le classement est alors marqué « provisoire ».</p></div></div>
+  <div class="grid g2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)">
+    <div class="card"><h2>Vos critères</h2><p>Seuls les champs Nombre, Montant et Oui/Non peuvent servir.</p>
+      ${numeric.length ? crit.map((c, i) => `<div class="sec" style="margin-bottom:8px"><select class="in" data-cf="${i}">${numeric.map((f) => `<option value="${f.id}" ${f.id === c.f ? "selected" : ""}>${esc(f.name)}</option>`).join("")}</select><div class="row"><label class="f" style="flex:1">Poids %<input class="in" type="number" min="0" max="100" data-cw="${i}" value="${c.w}"></label><label class="f" style="flex:1">Mieux si<select class="in" data-cd="${i}"><option value="high" ${c.dir !== "low" ? "selected" : ""}>Plus élevé</option><option value="low" ${c.dir === "low" ? "selected" : ""}>Plus bas</option></select></label><button class="btn sm ghost" data-cx="${i}" aria-label="Retirer">×</button></div></div>`).join("") + `<div class="row" style="justify-content:space-between"><button class="btn sm" data-act="addcrit">+ Critère</button><span class="meta" style="color:${Math.abs(crit.reduce((a, c) => a + c.w, 0) - 100) > 0.5 && crit.length ? "var(--bad)" : ""}">Total ${crit.reduce((a, c) => a + c.w, 0)} %</span></div>` : `<p class="meta">Ajoutez d'abord un champ numérique dans Entreprises (par exemple « Salaire analyste », un Montant), puis renseignez des valeurs.</p>`}
+    </div>
+    <div class="card"><h2>Résultat</h2><p>Score sur 100 calculé uniquement sur les critères renseignés.</p>
+      ${crit.length ? res.map((x, i) => `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line);flex-wrap:nowrap"><span class="meta" style="width:18px">${x.score == null ? "–" : i + 1}</span><b style="width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(rowName(x.r))}</b><span class="bar"><i style="width:${x.score ?? 0}%;opacity:${x.comp < 1 ? 0.55 : 1}"></i></span><span style="width:30px;text-align:right;font-variant-numeric:tabular-nums">${x.score == null ? "–" : Math.round(x.score)}</span>${x.score == null ? '<span class="badge">Pas de données</span>' : x.comp < 1 ? `<span class="badge warn">Provisoire · ${Math.round(x.comp * 100)} %</span>` : '<span class="badge good">Complet</span>'}</div>`).join("") : '<p class="meta">Ajoutez un critère pour voir le classement.</p>'}
+    </div></div>`;
+}
+const valNum = (r, fid) => { const f = S.fields.find((x) => x.id === fid); const v = r.cells[fid]?.v; if (v == null || v === "") return null; if (vt(f) === "BOOL") return /^(oui|yes|true|1|x)$/i.test(v) ? 1 : 0; return num(v); };
+
+// ───────────────────────── Layer & events ─────────────────────────
+function layer(html) { $("#layer").innerHTML = html; const first = $("#layer input, #layer select, #layer textarea, #layer button"); first && first.focus(); }
+function closeLayer() { $("#layer").innerHTML = ""; }
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if ($("#layer").innerHTML) closeLayer(); else if (editing) { editing = null; rerender(); } } });
+$("#layer").addEventListener("click", (e) => { if (e.target.closest("[data-close]")) return closeLayer(); const t = e.target.closest("[data-act]"); if (t) act(t.dataset.act, t.dataset, t); });
+$("#menuBtn").onclick = () => $("#side").classList.toggle("open");
+$("#resetBtn").onclick = (e) => { const b = e.currentTarget; if (b.dataset.armed) { S = seed(); save(); imp = null; delete b.dataset.armed; b.textContent = "Réinitialiser la démo"; toast("Démo réinitialisée"); location.hash = "accueil"; route(); } else { b.dataset.armed = "1"; b.textContent = "Confirmer : tout effacer ?"; setTimeout(() => { delete b.dataset.armed; b.textContent = "Réinitialiser la démo"; }, 4000); } };
+
+function bind(v) {
+  const view = $("#view");
+  view.onclick = (e) => {
+    const t = e.target.closest("[data-act],[data-open],[data-sort],[data-contact],[data-app],[data-cx]"); if (!t) return;
+    if (t.dataset.open) { e.preventDefault(); return openRow(t.dataset.open); }
+    if (t.dataset.sort) { sort = sort?.id === t.dataset.sort ? (sort.dir > 0 ? { id: sort.id, dir: -1 } : null) : { id: t.dataset.sort, dir: 1 }; return rerender(); }
+    if (t.dataset.contact && !e.target.closest("select")) return openContact(t.dataset.contact);
+    if (t.dataset.app && !e.target.closest("select")) return appForm(t.dataset.app);
+    if (t.dataset.cx !== undefined) { S.criteria.splice(+t.dataset.cx, 1); save(); return rerender(); }
+    act(t.dataset.act, t.dataset, t);
+  };
+  view.ondblclick = (e) => { const td = e.target.closest("td.cell"); if (td) startEdit(td.dataset.r, td.dataset.f); };
+  view.onkeydown = (e) => { const td = e.target.closest("td.cell"); if (td && e.key === "Enter") { e.preventDefault(); startEdit(td.dataset.r, td.dataset.f); } };
+  view.onchange = (e) => {
+    const t = e.target;
+    if (t.dataset.cstage) { S.contacts.find((c) => c.id === t.dataset.cstage).stage = t.value; save(); rerender(); }
+    if (t.dataset.astage) { S.apps.find((a) => a.id === t.dataset.astage).stage = t.value; save(); rerender(); }
+    if (t.dataset.cf !== undefined) { S.criteria[+t.dataset.cf].f = t.value; save(); rerender(); }
+    if (t.dataset.cw !== undefined) { S.criteria[+t.dataset.cw].w = Math.max(0, Math.min(100, +t.value || 0)); save(); rerender(); }
+    if (t.dataset.cd !== undefined) { S.criteria[+t.dataset.cd].dir = t.value; save(); rerender(); }
+    if (imp && t.dataset.mk !== undefined) imp.map[+t.dataset.mk].keep = t.checked;
+    if (imp && t.dataset.mt !== undefined) imp.map[+t.dataset.mt].type = t.value;
+    if (imp && t.dataset.mr !== undefined) { imp.map.forEach((m) => (m.role = "")); imp.map[+t.dataset.mr].role = t.value; rerender(); }
+    if (imp && t.dataset.mn !== undefined) imp.map[+t.dataset.mn].name = t.value.trim() || imp.map[+t.dataset.mn].name;
+    if (t.id === "sheet") { pickSheet(t.value); rerender(); }
+    if (t.id === "file" && t.files[0]) loadWorkbook(t.files[0]);
+  };
+  if (v === "entreprises") {
+    const q = $("#q"); q.oninput = () => { search = q.value; const pos = q.selectionStart; rerender(); const n = $("#q"); n.focus(); n.setSelectionRange(pos, pos); };
+    $("#addRow").onsubmit = (e) => { e.preventDefault(); const n = $("#newRow").value.trim(); if (!n) return; if (S.rows.some((r) => rowName(r).toLowerCase() === n.toLowerCase())) return toast("Cette entreprise est déjà dans le tableau"); S.rows.push({ id: uid(), cells: { [primary().id]: { v: n } } }); save(); toast(`${n} ajoutée`); rerender(); };
+    const ce = $("#cellEdit");
+    if (ce) { ce.focus(); ce.select?.(); const { r, f } = editing; let done = false;
+      const commit = () => { if (done) return; done = true; const val = ce.value.trim(); const err = validate(S.fields.find((x) => x.id === f), val); editing = null; if (err) { toast(err); return rerender(); } const row = S.rows.find((x) => x.id === r); const before = row.cells[f]?.v ?? ""; if (String(before) === val) return rerender(); const fld = S.fields.find((x) => x.id === f); setCell(r, f, val); rerender(); toast(`${fld.name} mis à jour`, () => { setCell(r, f, before, { why: "Annulation" }); rerender(); }); };
+      ce.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } if (e.key === "Escape") { done = true; editing = null; rerender(); } }; ce.onblur = commit; }
+  }
+  if (v === "import" && !imp) { const d = $("#drop"); d.ondragover = (e) => { e.preventDefault(); d.classList.add("over"); }; d.ondragleave = () => d.classList.remove("over"); d.ondrop = (e) => { e.preventDefault(); d.classList.remove("over"); if (e.dataTransfer.files[0]) loadWorkbook(e.dataTransfer.files[0]); }; }
+}
+function startEdit(r, f) { const row = S.rows.find((x) => x.id === r); if (row.cells[f]?.lock) return toast("Valeur confirmée : déverrouillez-la depuis la fiche pour la modifier"); editing = { r, f }; rerender(); }
+function act(a, d, el) {
+  if (a === "addfield") return fieldForm();
+  if (a === "research") return researchModal(d.scope, d.r);
+  if (a === "evid") return evidenceForm(d.r, d.f);
+  if (a === "lock") { const r = S.rows.find((x) => x.id === d.r); const c = r.cells[d.f] || (r.cells[d.f] = {}); c.lock = !c.lock; save(); toast(c.lock ? "Valeur confirmée : elle ne sera jamais écrasée" : "Valeur déverrouillée"); rerender(); return openRow(d.r); }
+  if (a === "delrow") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } S.rows = S.rows.filter((x) => x.id !== d.r); save(); closeLayer(); toast("Entreprise supprimée"); return rerender(); }
+  if (a === "copycsv") { const q = (s) => `"${String(s ?? "").replace(/"/g, '""').replace(/^([=+\-@])/, "'$1")}"`; return copy([S.fields.map((f) => q(f.name)).join(","), ...S.rows.map((r) => S.fields.map((f) => q(r.cells[f.id]?.v)).join(","))].join("\n")); }
+  if (a === "newcontact") return contactForm(d.company || "");
+  if (a === "delcontact") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } S.contacts = S.contacts.filter((c) => c.id !== d.c); save(); closeLayer(); return rerender(); }
+  if (a === "newapp") return appForm(null, d.company || "");
+  if (a === "delapp") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } S.apps = S.apps.filter((x) => x.id !== d.a); save(); closeLayer(); return rerender(); }
+  if (a === "addcrit") { const f = S.fields.find((x) => ["NUMBER", "CURRENCY", "BOOL"].includes(vt(x))); S.criteria.push({ f: f.id, w: Math.max(0, 100 - S.criteria.reduce((x, c) => x + c.w, 0)), dir: "high" }); save(); return rerender(); }
+  if (a === "discover") return researchModal("table");
+  if (a === "editws") {
+    layer(`<div class="scrim" data-close></div><form class="modal" id="wForm" role="dialog" aria-label="Objectif"><div class="row" style="justify-content:space-between"><h2>Votre objectif</h2><button type="button" class="x" data-close aria-label="Fermer">×</button></div>
+      <label class="f">Nom de l'espace<input class="in" id="wN" value="${esc(S.ws.name)}"></label><label class="f">Objectif<textarea class="in" id="wO">${esc(S.ws.objective)}</textarea></label>
+      <div class="grid" style="grid-template-columns:1fr 1fr"><label class="f">Villes visées<input class="in" id="wL" value="${esc(S.ws.locations.join(", "))}"></label><label class="f">Postes visés<input class="in" id="wR" value="${esc(S.ws.roles.join(", "))}"></label></div>
+      <div class="row" style="justify-content:flex-end"><button class="btn pri" type="submit">Enregistrer</button></div></form>`);
+    $("#wForm").onsubmit = (e) => { e.preventDefault(); const sp = (s) => s.split(",").map((x) => x.trim()).filter(Boolean); S.ws = { name: $("#wN").value.trim() || S.ws.name, objective: $("#wO").value.trim(), locations: sp($("#wL").value), roles: sp($("#wR").value) }; save(); closeLayer(); rerender(); };
+  }
+  if (a === "impcancel") { imp = null; return rerender(); }
+  if (a === "impcheck") { if (checkImport()) rerender(); return; }
+  if (a === "impback") { imp.step = 2; return rerender(); }
+  if (a === "impgo") return commitImport();
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
