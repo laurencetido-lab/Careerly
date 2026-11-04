@@ -1,0 +1,9 @@
+node_modules
+.next
+.env
+storage
+*.tsbuildinfo
+test-results
+e2e/artifacts
+storage-test
+e2e/fixtures

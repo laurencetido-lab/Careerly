@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 20% 12%;
+    --muted: 220 16% 96%;
+    --muted-foreground: 220 9% 42%;
+    --primary: 243 75% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 16% 95%;
+    --secondary-foreground: 224 20% 16%;
+    --accent: 243 80% 97%;
+    --accent-foreground: 243 60% 40%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 60% 36%;
+    --warning: 35 92% 45%;
+    --border: 220 14% 90%;
+    --input: 220 14% 86%;
+    --ring: 243 75% 56%;
+    --radius: 0.6rem;
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    color-scheme: light;
+  }
+  .dark {
+    --background: 228 14% 8%;
+    --foreground: 220 14% 94%;
+    --card: 228 13% 11%;
+    --card-foreground: 220 14% 94%;
+    --muted: 228 12% 15%;
+    --muted-foreground: 220 9% 64%;
+    --primary: 243 85% 68%;
+    --primary-foreground: 228 30% 8%;
+    --secondary: 228 12% 17%;
+    --secondary-foreground: 220 14% 92%;
+    --accent: 243 30% 20%;
+    --accent-foreground: 243 90% 86%;
+    --destructive: 0 70% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 55% 50%;
+    --warning: 38 92% 58%;
+    --border: 228 11% 20%;
+    --input: 228 11% 25%;
+    --ring: 243 85% 68%;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    color-scheme: dark;
+  }
+  * { @apply border-border; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-background text-foreground antialiased; font-feature-settings: "cv11", "ss01"; }
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+}
+
+@layer components {
+  .page-title { @apply text-xl font-semibold tracking-tight; }
+  .subtle { @apply text-sm text-muted-foreground; }
+  .table-cell { @apply border-b border-r px-2 py-1.5 text-sm align-top; }
+}
+
+/* Opacity only: transforms would override Tailwind's centring translate on dialogs */
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.animate-in { animation: fade-in 160ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .animate-in { animation: none; } }

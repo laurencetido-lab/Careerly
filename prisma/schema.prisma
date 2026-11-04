@@ -1,0 +1,922 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Identity ─────────────────────────────
+
+enum Plan {
+  FREE
+  PRO
+  TEAM
+  UNIVERSITY
+}
+
+model User {
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  passwordHash          String
+  name                  String
+  plan                  Plan      @default(FREE)
+  monthlyCredits        Int       @default(500)
+  locale                String    @default("en")
+  networkingLanguage    String    @default("en")
+  timezone              String    @default("Europe/Paris")
+  currency              String    @default("EUR")
+  dateFormat            String    @default("dd/MM/yyyy")
+  aiConsentAt           DateTime?
+  emailNotifications    Boolean   @default(false)
+  lastSeenAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  sessions      Session[]
+  memberships   WorkspaceMember[]
+  ownedSpaces   Workspace[]       @relation("WorkspaceOwner")
+  profile       UserProfile?
+  files         UploadedFile[]
+  notifications Notification[]
+  usage         UsageRecord[]
+  auditLogs     AuditLog[]
+  savedViews    SavedView[]
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  workspaceId String?
+  action      String
+  targetType  String?
+  targetId    String?
+  ip          String?
+  detail      String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([workspaceId, createdAt])
+}
+
+enum UsageKind {
+  SEARCH
+  EXTRACT
+  LLM
+}
+
+model UsageRecord {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId  String?
+  jobId        String?
+  kind         UsageKind
+  provider     String
+  credits      Int
+  inputTokens  Int       @default(0)
+  outputTokens Int       @default(0)
+  createdAt    DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([jobId])
+}
+
+// ───────────────────────────── Tenancy ─────────────────────────────
+
+enum MemberRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model Workspace {
+  id               String    @id @default(cuid())
+  ownerId          String
+  owner            User      @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name             String
+  objective        String    @default("")
+  targetLocations  String[]  @default([])
+  targetRoles      String[]  @default([])
+  searchLanguages  String[]  @default(["en"])
+  archivedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  members          WorkspaceMember[]
+  files            UploadedFile[]
+  datasets         Dataset[]
+  companies        Company[]
+  opportunities    Opportunity[]
+  contacts         Contact[]
+  interactions     NetworkingInteraction[]
+  drafts           MessageDraft[]
+  applications     Application[]
+  stages           PipelineStage[]
+  compensation     CompensationRecord[]
+  plans            ResearchPlan[]
+  jobs             ResearchJob[]
+  evidence         ResearchEvidence[]
+  scoringModels    ScoringModel[]
+  monitoringRules  MonitoringRule[]
+  notifications    Notification[]
+  documents        Document[]
+
+  @@index([ownerId])
+}
+
+model WorkspaceMember {
+  id          String     @id @default(cuid())
+  workspaceId String
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        MemberRole @default(OWNER)
+  createdAt   DateTime   @default(now())
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
+
+// ───────────────────────────── Profile ─────────────────────────────
+
+model UserProfile {
+  id                 String              @id @default(cuid())
+  userId             String              @unique
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline           String?
+  graduationDate     DateTime?
+  availability       String?
+  skills             String[]            @default([])
+  languages          String[]            @default([])
+  preferredLocations String[]            @default([])
+  careerInterests    String[]            @default([])
+  achievements       String[]            @default([])
+  cvFileId           String?
+  confirmedAt        DateTime?
+  updatedAt          DateTime            @updatedAt
+  education          ProfileEducation[]
+  experience         ProfileExperience[]
+}
+
+model ProfileEducation {
+  id          String      @id @default(cuid())
+  profileId   String
+  profile     UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  institution String
+  degree      String?
+  field       String?
+  startDate   String?
+  endDate     String?
+  position    Int         @default(0)
+}
+
+model ProfileExperience {
+  id          String      @id @default(cuid())
+  profileId   String
+  profile     UserProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  employer    String
+  title       String?
+  location    String?
+  startDate   String?
+  endDate     String?
+  summary     String?
+  position    Int         @default(0)
+}
+
+// ───────────────────────────── Files ─────────────────────────────
+
+enum FileKind {
+  CV
+  SPREADSHEET
+  DOCUMENT
+}
+
+model UploadedFile {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId  String?
+  workspace    Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  kind         FileKind
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  storageKey   String     @unique
+  sha256       String
+  createdAt    DateTime   @default(now())
+
+  datasets     Dataset[]
+  documents    Document[]
+
+  @@index([workspaceId])
+}
+
+model Document {
+  id          String       @id @default(cuid())
+  workspaceId String
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  fileId      String
+  file        UploadedFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  title       String
+  kind        String       @default("OTHER") // CV | COVER_LETTER | OTHER
+  version     String?
+  createdAt   DateTime     @default(now())
+
+  @@index([workspaceId])
+}
+
+// ───────────────────────────── Flexible data ─────────────────────────────
+
+enum EntityType {
+  COMPANY
+  OPPORTUNITY
+  GENERIC
+}
+
+enum FieldType {
+  TEXT
+  LONG_TEXT
+  NUMBER
+  CURRENCY
+  PERCENT
+  DATE
+  BOOLEAN
+  SINGLE_SELECT
+  MULTI_SELECT
+  URL
+  EMAIL
+  FORMULA
+  AI_RESEARCH
+  SOURCE_REF
+  RELATION
+}
+
+model Dataset {
+  id           String            @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name         String
+  entityType   EntityType        @default(COMPANY)
+  sourceFileId String?
+  sourceFile   UploadedFile?     @relation(fields: [sourceFileId], references: [id], onDelete: SetNull)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  fields       FieldDefinition[]
+  rows         DatasetRow[]
+  views        SavedView[]
+  plans        ResearchPlan[]
+  scoring      ScoringModel[]
+  monitoring   MonitoringRule[]
+
+  @@index([workspaceId])
+}
+
+model FieldDefinition {
+  id              String      @id @default(cuid())
+  datasetId       String
+  dataset         Dataset     @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  key             String
+  name            String
+  type            FieldType
+  // For AI_RESEARCH fields: the type of the researched value
+  valueType       FieldType?
+  position        Int         @default(0)
+  hidden          Boolean     @default(false)
+  width           Int         @default(180)
+  options         String[]    @default([])
+  currency        String?
+  formula         String?
+  // Binding to a core entity attribute, e.g. "company.name", "company.website"
+  coreBinding     String?
+  isPrimary       Boolean     @default(false)
+  researchPrompt  String?
+  sourceColumn    String?
+  relationDataset String?
+  createdAt       DateTime    @default(now())
+
+  values          FieldValue[]
+  planItems       ResearchPlanItem[]
+  criteria        ScoringCriterion[]
+
+  @@unique([datasetId, key])
+  @@index([datasetId, position])
+}
+
+model DatasetRow {
+  id          String       @id @default(cuid())
+  datasetId   String
+  dataset     Dataset      @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  companyId   String?
+  company     Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  position    Int          @default(0)
+  importKey   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  values      FieldValue[]
+  tasks       ResearchTask[]
+
+  @@index([datasetId, position])
+  @@index([companyId])
+}
+
+enum Confidence {
+  VERIFIED
+  REPORTED
+  ESTIMATED
+  CONFLICTING
+  UNKNOWN
+}
+
+enum ValueOrigin {
+  IMPORT
+  MANUAL
+  RESEARCH
+}
+
+model FieldValue {
+  id                String       @id @default(cuid())
+  rowId             String
+  row               DatasetRow   @relation(fields: [rowId], references: [id], onDelete: Cascade)
+  fieldId           String
+  field             FieldDefinition @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  textValue         String?
+  numberValue       Float?
+  dateValue         DateTime?
+  boolValue         Boolean?
+  listValue         String[]     @default([])
+  currency          String?
+  origin            ValueOrigin  @default(MANUAL)
+  confidence        Confidence?
+  manuallyConfirmed Boolean      @default(false)
+  researchedAt      DateTime?
+  researchJobId     String?
+  researchNotes     String?
+  // Pending research suggestion when the value is manually confirmed
+  suggestionText    String?
+  updatedAt         DateTime     @updatedAt
+
+  history           FieldValueHistory[]
+  evidence          ResearchEvidence[]
+
+  @@unique([rowId, fieldId])
+  @@index([fieldId, numberValue])
+  @@index([fieldId, dateValue])
+}
+
+model FieldValueHistory {
+  id            String      @id @default(cuid())
+  fieldValueId  String
+  fieldValue    FieldValue  @relation(fields: [fieldValueId], references: [id], onDelete: Cascade)
+  previousValue String?
+  newValue      String?
+  previousConfidence Confidence?
+  newConfidence Confidence?
+  origin        ValueOrigin
+  reason        String?
+  researchJobId String?
+  changedById   String?
+  createdAt     DateTime    @default(now())
+
+  @@index([fieldValueId, createdAt])
+}
+
+model SavedView {
+  id        String   @id @default(cuid())
+  datasetId String
+  dataset   Dataset  @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  // View configuration (sort, filters, hidden columns, grouping). UI state only, not business data.
+  config    Json
+  createdAt DateTime @default(now())
+
+  @@index([datasetId, userId])
+}
+
+// ───────────────────────────── Core career entities ─────────────────────────────
+
+model Company {
+  id             String       @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name           String
+  normalizedName String
+  website        String?
+  domain         String?
+  headquarters   String?
+  industry       String?
+  description    String?
+  matchReason    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  rows           DatasetRow[]
+  opportunities  Opportunity[]
+  contacts       Contact[]
+  applications   Application[]
+  compensation   CompensationRecord[]
+
+  @@unique([workspaceId, normalizedName])
+  @@index([workspaceId, domain])
+}
+
+enum OpportunityPipeline {
+  GRADUATE_PROGRAMME
+  INTERNSHIP
+  PERMANENT
+  OTHER
+}
+
+enum OpportunityStatus {
+  VERIFIED_OPEN
+  PREVIOUSLY_OPEN_UNKNOWN
+  CONFIRMED_CLOSED
+  EXPECTED_UNCONFIRMED
+}
+
+model Opportunity {
+  id                 String              @id @default(cuid())
+  workspaceId        String
+  workspace          Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  companyId          String?
+  company            Company?            @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  title              String
+  department         String?
+  location           String?
+  employmentType     String?
+  pipeline           OpportunityPipeline @default(PERMANENT)
+  seniority          String?
+  description        String?
+  qualifications     String?
+  startDate          String?
+  deadline           DateTime?
+  salaryText         String?
+  bonusText          String?
+  applicationUrl     String?
+  sourceUrl          String?
+  status             OpportunityStatus   @default(PREVIOUSLY_OPEN_UNKNOWN)
+  relevance          String?
+  conversionEvidence String?
+  dedupeKey          String
+  origin             ValueOrigin         @default(MANUAL)
+  firstDiscoveredAt  DateTime            @default(now())
+  lastVerifiedAt     DateTime?
+  updatedAt          DateTime            @updatedAt
+
+  applications       Application[]
+  evidence           ResearchEvidence[]
+
+  @@unique([workspaceId, dedupeKey])
+  @@index([workspaceId, deadline])
+  @@index([companyId])
+}
+
+enum ContactStage {
+  DISCOVERED
+  SHORTLISTED
+  MESSAGE_DRAFTED
+  CONTACTED
+  RESPONDED
+  CALL_SCHEDULED
+  CALL_COMPLETED
+  FOLLOW_UP
+  REFERRAL
+}
+
+model Contact {
+  id                   String       @id @default(cuid())
+  workspaceId          String
+  workspace            Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  companyId            String?
+  company              Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  fullName             String
+  title                String?
+  team                 String?
+  location             String?
+  profileUrl           String?
+  sourceUrl            String?
+  sourceExcerpt        String?
+  verifiedAt           DateTime?
+  recommendationReason String?
+  relevanceScore       Int          @default(0)
+  // Alumni link confirmed by the user (never inferred)
+  alumniOf             String?
+  isRecruiter          Boolean      @default(false)
+  stage                ContactStage @default(DISCOVERED)
+  origin               ValueOrigin  @default(MANUAL)
+  privateNotes         String?
+  dedupeKey            String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  interactions         NetworkingInteraction[]
+  drafts               MessageDraft[]
+  applications         Application[]
+
+  @@unique([workspaceId, dedupeKey])
+  @@index([workspaceId, stage])
+}
+
+model NetworkingInteraction {
+  id                 String    @id @default(cuid())
+  workspaceId        String
+  workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contactId          String
+  contact            Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type               String    // MESSAGE | EMAIL | CALL | MEETING | NOTE | REFERRAL
+  occurredAt         DateTime  @default(now())
+  summary            String?
+  salaryInsight      String?
+  recruitmentInsight String?
+  careerInsight      String?
+  nextAction         String?
+  followUpAt         DateTime?
+  followUpDone       Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+
+  @@index([workspaceId, followUpAt])
+  @@index([contactId])
+}
+
+model MessageDraft {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contactId   String
+  contact     Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  purpose     String
+  platform    String
+  tone        String
+  language    String
+  body        String
+  generatedBy String    // AI | TEMPLATE | USER
+  createdAt   DateTime  @default(now())
+
+  @@index([contactId])
+}
+
+model PipelineStage {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  key         String
+  label       String
+  position    Int
+  terminal    Boolean   @default(false)
+
+  @@unique([workspaceId, key])
+}
+
+model Application {
+  id               String       @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  companyId        String?
+  company          Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  opportunityId    String?
+  opportunity      Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  recruiterId      String?
+  recruiter        Contact?     @relation(fields: [recruiterId], references: [id], onDelete: SetNull)
+  role             String
+  stage            String       @default("RESEARCHING")
+  applicationUrl   String?
+  appliedAt        DateTime?
+  deadline         DateTime?
+  cvVersion        String?
+  coverLetter      String?
+  tests            String?
+  feedback         String?
+  compensationNote String?
+  nextAction       String?
+  nextActionAt     DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  interviews       Interview[]
+
+  @@index([workspaceId, stage])
+}
+
+model Interview {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  scheduledAt   DateTime?
+  round         String
+  format        String?
+  questions     String?
+  preparedAnswers String?
+  notes         String?
+  feedback      String?
+  prepProgress  Int         @default(0)
+  createdAt     DateTime    @default(now())
+}
+
+enum CompSourceType {
+  OFFICIAL
+  EMPLOYEE_REPORTED
+  MARKET_ESTIMATE
+  USER_NETWORKING
+  UNKNOWN
+}
+
+model CompensationRecord {
+  id           String         @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  companyId    String?
+  company      Company?       @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  roleTitle    String
+  seniority    String
+  city         String?
+  country      String?
+  year         Int
+  currency     String
+  baseSalary   Float?
+  targetBonus  Float?
+  actualBonus  Float?
+  signingBonus Float?
+  longTermIncentive String?
+  carriedInterest   String?
+  sourceType   CompSourceType
+  confidence   Confidence     @default(UNKNOWN)
+  sourceUrl    String?
+  notes        String?
+  isPrivate    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+
+  @@index([workspaceId, currency, year])
+}
+
+// ───────────────────────────── Research ─────────────────────────────
+
+enum ResearchScope {
+  CELL
+  ROW
+  ROWS
+  COLUMN
+  DATASET
+  DISCOVER_COMPANIES
+  DISCOVER_CONTACTS
+  DISCOVER_OPPORTUNITIES
+}
+
+enum PlanStatus {
+  DRAFT
+  APPROVED
+  REJECTED
+}
+
+model ResearchPlan {
+  id               String          @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  datasetId        String?
+  dataset          Dataset?        @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  createdById      String
+  objective        String
+  scope            ResearchScope
+  rowIds           String[]        @default([])
+  companyId        String?
+  maxResults       Int             @default(10)
+  estimatedCredits Int             @default(0)
+  budgetCredits    Int             @default(0)
+  generatedBy      String          @default("TEMPLATE") // AI | TEMPLATE
+  status           PlanStatus      @default(DRAFT)
+  approvedAt       DateTime?
+  createdAt        DateTime        @default(now())
+
+  items            ResearchPlanItem[]
+  jobs             ResearchJob[]
+
+  @@index([workspaceId, createdAt])
+}
+
+model ResearchPlanItem {
+  id          String           @id @default(cuid())
+  planId      String
+  plan        ResearchPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  fieldId     String?
+  field       FieldDefinition? @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  instruction String
+  queries     String[]         @default([])
+  position    Int              @default(0)
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  PARTIAL
+  FAILED
+  CANCELLED
+}
+
+model ResearchJob {
+  id               String         @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  planId           String?
+  plan             ResearchPlan?  @relation(fields: [planId], references: [id], onDelete: SetNull)
+  monitoringRuleId String?
+  createdById      String
+  scope            ResearchScope
+  status           JobStatus      @default(QUEUED)
+  cancelRequested  Boolean        @default(false)
+  totalTasks       Int            @default(0)
+  completedTasks   Int            @default(0)
+  failedTasks      Int            @default(0)
+  budgetCredits    Int            @default(0)
+  creditsUsed      Int            @default(0)
+  error            String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime       @default(now())
+
+  tasks            ResearchTask[]
+  logs             ResearchLog[]
+
+  @@index([workspaceId, createdAt])
+}
+
+model ResearchTask {
+  id          String      @id @default(cuid())
+  jobId       String
+  job         ResearchJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  rowId       String?
+  row         DatasetRow? @relation(fields: [rowId], references: [id], onDelete: Cascade)
+  fieldId     String?
+  query       String?
+  status      JobStatus   @default(QUEUED)
+  attempts    Int         @default(0)
+  result      String?
+  error       String?
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([jobId, rowId, fieldId, query])
+  @@index([jobId, status])
+}
+
+model ResearchLog {
+  id        String      @id @default(cuid())
+  jobId     String
+  job       ResearchJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  level     String      // info | warn | error
+  message   String
+  createdAt DateTime    @default(now())
+
+  @@index([jobId, createdAt])
+}
+
+model ResearchSource {
+  id          String    @id @default(cuid())
+  url         String    @unique
+  domain      String
+  title       String?
+  publishedAt DateTime?
+  tier        Int       @default(5)
+  firstSeenAt DateTime  @default(now())
+  evidence    ResearchEvidence[]
+}
+
+model ResearchEvidence {
+  id            String          @id @default(cuid())
+  workspaceId   String
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  fieldValueId  String?
+  fieldValue    FieldValue?     @relation(fields: [fieldValueId], references: [id], onDelete: Cascade)
+  opportunityId String?
+  opportunity   Opportunity?    @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  contactId     String?
+  companyId     String?
+  sourceId      String
+  source        ResearchSource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  value         String?
+  excerpt       String
+  confidence    Confidence
+  retrievedAt   DateTime
+  verifiedAt    DateTime        @default(now())
+  researchJobId String?
+  notes         String?
+  // MANUAL = entered by the user via the manual research workflow
+  origin        ValueOrigin     @default(RESEARCH)
+  createdAt     DateTime        @default(now())
+
+  @@index([fieldValueId])
+  @@index([workspaceId, createdAt])
+}
+
+model SearchCache {
+  id        String   @id @default(cuid())
+  provider  String
+  queryHash String
+  query     String
+  results   Json
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@unique([provider, queryHash])
+}
+
+model PageCache {
+  id        String   @id @default(cuid())
+  urlHash   String   @unique
+  url       String
+  title     String?
+  content   String
+  fetchedAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+// ───────────────────────────── Intelligence ─────────────────────────────
+
+model ScoringModel {
+  id          String             @id @default(cuid())
+  workspaceId String
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  datasetId   String
+  dataset     Dataset            @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  name        String
+  createdAt   DateTime           @default(now())
+  criteria    ScoringCriterion[]
+
+  @@index([workspaceId])
+}
+
+model ScoringCriterion {
+  id              String          @id @default(cuid())
+  modelId         String
+  model           ScoringModel    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  fieldId         String
+  field           FieldDefinition @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  weight          Float           @default(0)
+  // HIGHER | LOWER | TRUE (boolean true is better)
+  direction       String          @default("HIGHER")
+  // NONE | MIN | MAX | EQUALS
+  constraintType  String          @default("NONE")
+  constraintValue String?
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM
+}
+
+model MonitoringRule {
+  id              String     @id @default(cuid())
+  workspaceId     String
+  workspace       Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  datasetId       String
+  dataset         Dataset    @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  createdById     String
+  name            String
+  fieldIds        String[]
+  frequency       Frequency  @default(WEEKLY)
+  intervalDays    Int        @default(7)
+  creditCapPerRun Int        @default(100)
+  enabled         Boolean    @default(true)
+  lastRunAt       DateTime?
+  nextRunAt       DateTime
+  createdAt       DateTime   @default(now())
+
+  @@index([enabled, nextRunAt])
+}
+
+model Notification {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  type        String
+  title       String
+  body        String?
+  link        String?
+  dedupeKey   String
+  readAt      DateTime?
+  createdAt   DateTime   @default(now())
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt, createdAt])
+}

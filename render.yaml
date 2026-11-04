@@ -1,0 +1,35 @@
+# Render Blueprint: one free web service (worker runs in-process) + one free PostgreSQL database.
+# Deploy: Render dashboard → New → Blueprint → select this repository.
+services:
+  - type: web
+    name: careerly
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npx prisma migrate deploy && npm run build && npm run seed:demo
+    startCommand: npm run start
+    healthCheckPath: /login
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: careerly-db
+          property: connectionString
+      - key: NODE_VERSION
+        value: "22"
+      - key: RUN_WORKER_IN_WEB
+        value: "true"
+      - key: STORAGE_DIR
+        value: /tmp/careerly-storage
+      - key: ANTHROPIC_MODEL
+        value: claude-opus-5-5
+      # Optional, to enable live research (set in the Render dashboard, never commit keys):
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+
+databases:
+  - name: careerly-db
+    plan: free
+    databaseName: careerly
