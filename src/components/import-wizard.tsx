@@ -5,6 +5,8 @@ import { useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, CheckCircle2, FileSpreadsheet, Upload } from "lucide-react";
 import { commitImport, previewImport, uploadSpreadsheet, validateImportAction } from "@/app/actions/import";
+import { planVerification, type PlanView } from "@/app/actions/research";
+import { PlanReviewDialog } from "./plan-review";
 import { FIELD_TYPE_LABELS, type FieldTypeName } from "@/lib/fields";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -33,6 +35,7 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
   const [result, setResult] = useState<{ datasetId: string; created: number; updated: number; skipped: number; invalidCells: number } | null>(null);
   const [drag, setDrag] = useState(false);
   const [confirmList, setConfirmList] = useState(false);
+  const [plan, setPlan] = useState<PlanView | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function applyPreview(p: Preview) {
@@ -328,6 +331,11 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
             <p className="mt-1 text-sm text-muted-foreground">
               {result.created} new rows · {result.updated} updated · {result.skipped} skipped{result.invalidCells ? ` · ${result.invalidCells} invalid values left empty` : ""}
             </p>
+            <div className="mt-5 w-full max-w-md rounded-lg border bg-muted/40 p-3 text-left text-sm">
+              <p className="font-medium">Check these employers exist</p>
+              <p className="text-muted-foreground">Careerly searches the web for each name and marks it verified, to confirm or not found. It also fills in missing websites. 1 credit per employer, and you approve the budget first.</p>
+              <Button className="mt-2" size="sm" variant="secondary" disabled={pending} onClick={() => start(async () => { const r = await planVerification(workspaceId, { datasetId: result.datasetId, rowIds: [] }); if (!r.ok) return void toast.error(r.error); setPlan(r.data); })}>Verify employers online</Button>
+            </div>
             <div className="mt-5 flex gap-2">
               <Button asChild><Link href={`/app/w/${workspaceId}/data/${result.datasetId}`}>Open table</Link></Button>
               <Button variant="outline" onClick={() => { setStep(1); setFile(null); setPreview(null); setCorrections({}); }}>Import another file</Button>
@@ -335,6 +343,7 @@ export function ImportWizard({ workspaceId, datasets }: { workspaceId: string; d
           </CardContent>
         </Card>
       )}
+      <PlanReviewDialog workspaceId={workspaceId} plan={plan} onClose={() => setPlan(null)} />
     </div>
   );
 }

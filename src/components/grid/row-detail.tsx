@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Briefcase, ExternalLink, History, Lock, LockOpen, Pencil, Plus, Sparkles, Users, FolderKanban } from "lucide-react";
-import { addManualEvidence, dismissSuggestion, getRowDetail, setConfirmed } from "@/app/actions/data";
+import { addManualEvidence, dismissSuggestion, getRowDetail, setConfirmed, updateCompany } from "@/app/actions/data";
 import { planDiscovery, type PlanView } from "@/app/actions/research";
 import { createApplication } from "@/app/actions/applications";
 import type { GridField, GridRow } from "@/lib/grid-types";
@@ -58,6 +58,25 @@ export function RowDetail({ workspaceId, rowId, row, fields, canEdit, onClose, o
               <Button variant="outline" size="sm" onClick={() => discover("DISCOVER_CONTACTS")} disabled={pending || !canEdit}><Users /> Find people</Button>
               <Button variant="outline" size="sm" onClick={() => discover("DISCOVER_OPPORTUNITIES")} disabled={pending || !canEdit}><Briefcase /> Find jobs</Button>
               <Button variant="outline" size="sm" disabled={pending || !canEdit} onClick={() => start(async () => { const r = await createApplication(workspaceId, { companyId: detail.company!.id, role: "" }); if (!r.ok) toast.error(r.error); else { toast.success("Application created"); router.push(`/app/w/${workspaceId}/applications`); } })}><FolderKanban /> Track application</Button>
+              <div className="col-span-3 grid gap-2 rounded-lg border p-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-medium">Online check</span>
+                  <Badge variant={detail.company.verifyStatus === "VERIFIED" ? "success" : detail.company.verifyStatus === "NOT_FOUND" ? "danger" : detail.company.verifyStatus === "AMBIGUOUS" ? "warning" : "outline"}>
+                    {({ VERIFIED: "Verified online", AMBIGUOUS: "To confirm", NOT_FOUND: "Not found online", UNVERIFIED: "Not verified yet" } as Record<string, string>)[detail.company.verifyStatus]}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {detail.company.verifyNote ?? "Use Research → Verify employers exist online to check this employer (1 credit)."}
+                  {detail.company.verifySource ? <> · <a className="text-primary hover:underline" href={detail.company.verifySource} target="_blank" rel="noopener noreferrer nofollow">source</a></> : null}
+                  {detail.company.verifiedAt ? ` · checked ${formatDate(detail.company.verifiedAt)}` : ""}
+                </p>
+                <div className="grid gap-2 sm:grid-cols-[160px_1fr]">
+                  <Select aria-label="Priority" value={detail.company.priority} disabled={!canEdit} onChange={async (e) => { const r = await updateCompany(workspaceId, detail.company!.id, { priority: e.target.value }); if (!r.ok) toast.error(r.error); router.refresh(); }}>
+                    <option value="NONE">No priority</option><option value="HIGH">★ High priority</option><option value="MEDIUM">Medium</option><option value="LOW">Low</option><option value="EXCLUDED">Excluded</option>
+                  </Select>
+                  <Textarea aria-label="Private notes" rows={2} placeholder="Private notes (never used in research)" defaultValue={detail.company.privateNotes ?? ""} disabled={!canEdit} onBlur={async (e) => { if (e.target.value === (detail.company!.privateNotes ?? "")) return; const r = await updateCompany(workspaceId, detail.company!.id, { privateNotes: e.target.value || null }); if (!r.ok) toast.error(r.error); else toast.success("Notes saved"); }} />
+                </div>
+              </div>
               <p className="col-span-3 text-xs text-muted-foreground">
                 {detail.company.contacts} contact{detail.company.contacts === 1 ? "" : "s"} · {detail.company.opportunities} opportunit{detail.company.opportunities === 1 ? "y" : "ies"} ·{" "}
                 <Link className="text-primary hover:underline" href={`/app/w/${workspaceId}/networking?company=${detail.company.id}`}>see contacts</Link>

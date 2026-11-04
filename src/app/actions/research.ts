@@ -6,8 +6,8 @@ import { requireUser } from "@/server/auth";
 import { requireDataset, requireWorkspace } from "@/server/authz";
 import { action, AppError } from "@/server/errors";
 import { rateLimit } from "@/server/ratelimit";
-import { creditSummary, estimateDiscoveryCredits, estimateEnrichCredits } from "@/server/credits";
-import { createDiscoveryPlan, createEnrichPlan } from "@/server/research/plan";
+import { creditSummary, estimateDiscoveryCredits, estimateEnrichCredits, estimateVerifyCredits } from "@/server/credits";
+import { createDiscoveryPlan, createEnrichPlan, createVerifyPlan } from "@/server/research/plan";
 import { cancelJob, launchPlan, researchReadiness } from "@/server/research/jobs";
 
 export type PlanView = {
@@ -25,7 +25,7 @@ export type PlanView = {
 
 async function planView(planId: string, userId: string): Promise<PlanView> {
   const plan = await db.researchPlan.findFirstOrThrow({ where: { id: planId, createdById: userId }, include: { items: { include: { field: true }, orderBy: { position: "asc" } } } });
-  const rows = plan.scope.startsWith("DISCOVER") ? 0 : plan.rowIds.length || (plan.datasetId ? await db.datasetRow.count({ where: { datasetId: plan.datasetId } }) : 0);
+  const rows = plan.scope.startsWith("DISCOVER") || plan.scope === "VERIFY_COMPANIES" ? 0 : plan.rowIds.length || (plan.datasetId ? await db.datasetRow.count({ where: { datasetId: plan.datasetId } }) : 0);
   return {
     id: plan.id,
     scope: plan.scope,
@@ -86,6 +86,18 @@ export async function planDiscovery(workspaceId: string, input: unknown) {
   });
 }
 
+export async function planVerification(workspaceId: string, input: unknown) {
+  return action(async () => {
+    const user = await requireUser();
+    const ws = await requireWorkspace(user.id, workspaceId, "EDITOR");
+    rateLimit(`plan:${user.id}`, 30, 60_000);
+    const d = z.object({ datasetId: z.string(), rowIds: z.array(z.string()).max(5000).default([]) }).parse(input);
+    await requireDataset(workspaceId, d.datasetId);
+    const plan = await createVerifyPlan(user, ws, d);
+    return planView(plan.id, user.id);
+  });
+}
+
 const ItemsSchema = z.array(z.object({ id: z.string(), instruction: z.string().trim().min(3).max(2000), queries: z.array(z.string().trim().min(2).max(300)).min(1).max(5) })).max(40);
 
 /** Save user edits to a draft plan and recompute its estimate. */
@@ -98,13 +110,15 @@ export async function updatePlan(workspaceId: string, planId: string, itemsInput
     const items = ItemsSchema.parse(itemsInput);
     for (const it of items) {
       if (!plan.items.some((x) => x.id === it.id)) continue;
-      await db.researchPlanItem.update({ where: { id: it.id }, data: { instruction: it.instruction, queries: plan.scope.startsWith("DISCOVER") ? [it.queries[0]] : it.queries } });
+      await db.researchPlanItem.update({ where: { id: it.id }, data: { instruction: it.instruction, queries: plan.scope.startsWith("DISCOVER") || plan.scope === "VERIFY_COMPANIES" ? [it.queries[0]] : it.queries } });
     }
     const removed = plan.items.filter((x) => !items.some((i) => i.id === x.id));
     if (removed.length && removed.length < plan.items.length) await db.researchPlanItem.deleteMany({ where: { id: { in: removed.map((r) => r.id) } } });
     const fresh = await db.researchPlanItem.findMany({ where: { planId } });
     const rows = plan.rowIds.length || (plan.datasetId ? await db.datasetRow.count({ where: { datasetId: plan.datasetId } }) : 0);
-    const estimated = plan.scope.startsWith("DISCOVER")
+    const estimated = plan.scope === "VERIFY_COMPANIES"
+      ? estimateVerifyCredits(fresh.length)
+      : plan.scope.startsWith("DISCOVER")
       ? estimateDiscoveryCredits(fresh.length)
       : estimateEnrichCredits(rows * fresh.length, Math.max(...fresh.map((f) => f.queries.length)));
     await db.researchPlan.update({ where: { id: planId }, data: { estimatedCredits: estimated, ...(maxResults ? { maxResults: Math.min(100, Math.max(1, maxResults)) } : {}) } });

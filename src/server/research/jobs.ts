@@ -10,10 +10,11 @@ import { enqueueResearchJob } from "../queue";
 import { BudgetExhausted, JobCancelled, ResearchContext } from "./context";
 import { discoverContacts, discoverEmployers, discoverOpportunities } from "./discover";
 import { enrichCell } from "./enrich";
+import { verifyCompany } from "./verify-company";
 
 export function researchReadiness(scope: string, p: Providers = getProviders()) {
   if (!p.search) return "Web search is not configured. Add a Tavily or Brave Search API key (see Settings → Research providers), or use manual research.";
-  if (scope !== "DISCOVER_CONTACTS" && !p.llm) return "The AI extraction provider is not configured. Add an Anthropic API key (see Settings → Research providers), or use manual research.";
+  if (scope !== "DISCOVER_CONTACTS" && scope !== "VERIFY_COMPANIES" && !p.llm) return "The AI extraction provider is not configured. Add an Anthropic API key (see Settings → Research providers), or use manual research.";
   return null;
 }
 
@@ -30,7 +31,9 @@ export async function launchPlan(user: User, planId: string, budget: number, opt
   await assertCreditsAvailable(user.id, budget);
 
   const tasks: { rowId: string | null; fieldId: string | null; query: string | null }[] = [];
-  if (plan.scope.startsWith("DISCOVER")) {
+  if (plan.scope === "VERIFY_COMPANIES") {
+    for (const it of plan.items) if (it.companyId) tasks.push({ rowId: null, fieldId: null, query: `${it.companyId}::${it.queries[0] ?? it.instruction}` });
+  } else if (plan.scope.startsWith("DISCOVER")) {
     for (const it of plan.items) tasks.push({ rowId: null, fieldId: null, query: it.queries[0] ?? it.instruction });
   } else {
     const rowIds = plan.rowIds.length
@@ -93,7 +96,10 @@ export async function runJob(jobId: string, providers?: Providers) {
     await db.researchTask.update({ where: { id: task.id }, data: { status: "RUNNING", attempts: { increment: 1 } } });
     try {
       let r: { status: string; summary?: string };
-      if (job.scope === "DISCOVER_COMPANIES") {
+      if (job.scope === "VERIFY_COMPANIES") {
+        const [companyId, ...q] = (task.query ?? "").split("::");
+        r = await verifyCompany(ctx, { companyId, query: q.join("::") });
+      } else if (job.scope === "DISCOVER_COMPANIES") {
         r = await discoverEmployers(ctx, { planId: job.planId!, query: task.query!, objective: job.plan!.objective, maxResults: job.plan!.maxResults });
       } else if (job.scope === "DISCOVER_CONTACTS") {
         r = await discoverContacts(ctx, { companyId: job.plan!.companyId!, query: task.query!, roles: ws.targetRoles, locations: ws.targetLocations, maxResults: job.plan!.maxResults });

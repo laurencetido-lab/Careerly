@@ -4,6 +4,7 @@ import { logout } from "@/app/actions/auth";
 import { Logo } from "./logo";
 import { NavLinks, MobileNav, ThemeToggle, WorkspaceSwitcher } from "./shell-client";
 import { t } from "@/lib/i18n";
+import { CommandPalette } from "./command-palette";
 
 export function Shell({
   user,
@@ -28,6 +29,7 @@ export function Shell({
         { href: `${base}/opportunities`, label: d.opportunities, icon: "opportunities" },
         { href: `${base}/networking`, label: d.networking, icon: "networking" },
         { href: `${base}/applications`, label: d.applications, icon: "applications" },
+        { href: `${base}/agenda`, label: d.agenda, icon: "agenda" },
         { href: `${base}/compensation`, label: d.compensation, icon: "compensation" },
         { href: `${base}/ranking`, label: d.analytics, icon: "analytics" },
         { href: `${base}/monitoring`, label: d.monitoring, icon: "monitoring" },
@@ -52,6 +54,7 @@ export function Shell({
         </Link>
       </div>
       <WorkspaceSwitcher current={workspace ?? null} workspaces={workspaces} newLabel={d.newWorkspace} />
+      {workspace ? <CommandPalette workspaceId={workspace.id} pages={items.map(({ label, href }) => ({ label, href }))} /> : null}
       <NavLinks items={items} />
       <div className="mt-auto space-y-1">
         <NavLinks items={footer} />

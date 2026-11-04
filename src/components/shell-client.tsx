@@ -4,14 +4,14 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import * as D from "@radix-ui/react-dialog";
 import {
-  BarChart3, Bot, Briefcase, Building2, Check, ChevronsUpDown, FileText, FolderKanban, Home, Menu as MenuIcon, Moon, Plus, Radar, Search, Settings, Sun, User, Users, Wallet, Layers,
+  BarChart3, Bot, Briefcase, Building2, CalendarDays, Check, ChevronsUpDown, FileText, FolderKanban, Home, Menu as MenuIcon, Moon, Plus, Radar, Search, Settings, Sun, User, Users, Wallet, Layers,
 } from "lucide-react";
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "./ui/dropdown";
 import { cn } from "@/lib/utils";
 
 const ICONS = {
   home: Home, research: Search, companies: Building2, opportunities: Briefcase, networking: Users, applications: FolderKanban,
-  compensation: Wallet, analytics: BarChart3, monitoring: Radar, documents: FileText, assistant: Bot, workspaces: Layers, profile: User, settings: Settings,
+  compensation: Wallet, agenda: CalendarDays, analytics: BarChart3, monitoring: Radar, documents: FileText, assistant: Bot, workspaces: Layers, profile: User, settings: Settings,
 } as const;
 
 export function NavLinks({ items }: { items: { href: string; label: string; icon: string }[] }) {

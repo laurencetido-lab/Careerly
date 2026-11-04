@@ -121,6 +121,7 @@ label.f span.h { font-weight: 400; color: var(--ink-3); font-size: 12px; }
 .badge.warn { color: var(--honey-ink); background: var(--honey-soft); }
 .badge.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
 .badge.out { background: transparent; border: 1px solid var(--rule-2); }
+.badge.info { color: var(--s1); background: color-mix(in srgb, var(--s1) 12%, transparent); }
 .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
 .mono-av { width: 26px; height: 26px; border-radius: 7px; display: inline-grid; place-items: center; font-family: var(--display); font-weight: 750; font-size: 11px; letter-spacing: -0.02em; color: #fff; flex: none; }
 
@@ -249,6 +250,42 @@ details summary { cursor: pointer; color: var(--ink-3); font-size: 12.5px; }
 .discover { display: grid; gap: 8px; text-align: left; cursor: pointer; }
 .discover svg { width: 22px; height: 22px; color: var(--accent); }
 .discover:hover { border-color: var(--accent); }
+.kbtn { display: flex; align-items: center; gap: 8px; width: 100%; background: var(--rail-2); border: 0; color: var(--rail-mute); border-radius: 9px; padding: 8px 10px; cursor: pointer; font-size: 13px; text-align: left; }
+.kbtn:hover { color: var(--rail-ink); }
+.kbtn span { flex: 1; }
+.kbtn kbd, .pal kbd { font-family: var(--mono); font-size: 10.5px; border: 1px solid currentColor; border-radius: 5px; padding: 0 5px; opacity: .7; }
+.pal { position: fixed; z-index: 45; left: 50%; top: 12vh; translate: -50% 0; width: min(600px, calc(100% - 32px)); background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden; animation: pop .16s ease-out; }
+.pal .inp { display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--rule); }
+.pal .inp input { flex: 1; border: 0; background: transparent; height: 54px; font-size: 15px; outline: none; }
+.pal ul { list-style: none; margin: 0; padding: 6px; max-height: 52vh; overflow: auto; }
+.pal li button { width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 9px; border: 0; background: transparent; cursor: pointer; text-align: left; }
+.pal li button[aria-selected="true"] { background: var(--sunk); }
+.pal li .t { flex: 1; min-width: 0; } .pal li .t b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .pal li .t small { color: var(--ink-3); }
+.pal .hint { padding: 9px 16px; border-top: 1px solid var(--rule); color: var(--ink-3); font-size: 12px; display: flex; gap: 14px; }
+.start { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; }
+.start ol { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.start li a { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--rule); text-decoration: none; color: inherit; height: 100%; }
+.start li a:hover { border-color: var(--accent); }
+.start li .ck { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--rule-2); flex: none; display: grid; place-items: center; font-size: 11px; margin-top: 1px; }
+.start li.done .ck { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.start li.done b { color: var(--ink-3); text-decoration: line-through; }
+.start li b { font-weight: 600; font-size: 13px; display: block; } .start li small { color: var(--ink-3); font-size: 12px; }
+.ring { width: 64px; height: 64px; }
+.chips { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--rule-2); background: var(--surface); border-radius: 99px; padding: 4px 11px; font-size: 12.5px; cursor: pointer; color: var(--ink-2); }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--canvas); border-color: var(--ink); }
+.prio { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.prio button { border: 1px solid var(--rule-2); background: var(--surface); border-radius: 8px; padding: 4px 10px; font-size: 12.5px; cursor: pointer; }
+.prio button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-deep); font-weight: 600; }
+.vstat { display: flex; gap: 10px; align-items: flex-start; }
+.agenda h2.grp { font-size: 13px; margin: 0 0 8px; color: var(--ink-2); } .agenda h2.grp.late { color: var(--bad); }
+.agenda .it { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--rule); cursor: pointer; text-decoration: none; color: inherit; }
+.agenda .it:last-child { border-bottom: 0; } .agenda .it:hover { background: var(--sunk); }
+.agenda .it .d { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); }
+.agenda .it b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prep { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; font-size: 12.5px; }
+.prep label { display: flex; gap: 7px; align-items: flex-start; }
+@media (max-width: 860px) { .start ol { grid-template-columns: 1fr; } .start { grid-template-columns: 1fr; } .prep { grid-template-columns: 1fr; } }
 @keyframes fade { from { opacity: 0; } }
 @keyframes slide { from { transform: translateX(24px); opacity: 0; } }
 @keyframes pop { from { opacity: 0; scale: .97; } }
@@ -274,13 +311,15 @@ details summary { cursor: pointer; color: var(--ink-3); font-size: 12.5px; }
   <aside class="side" id="side">
     <div class="logo"><i><svg viewBox="0 0 24 24" width="17" height="17"><path d="M5 15.5 10 10l3 3 6-6" stroke="#1b1305" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="7" r="1.8" fill="#1b1305"/></svg></i><span>Careerly<small>Discover. Connect. Grow.</small></span></div>
     <div class="ws" id="wsName"></div>
+    <button class="kbtn" id="searchBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><span>Rechercher…</span><kbd>Ctrl K</kbd></button>
     <nav id="nav"></nav>
     <div class="foot">
+      <button id="themeBtn" type="button">☾ Thème sombre</button>
       <button id="resetBtn">Réinitialiser la démo</button>
       <span>Vos saisies restent dans ce navigateur.</span>
     </div>
   </aside>
-  <main><div class="topbar"><span class="crumb" id="crumb"></span><span class="demo-chip" tabindex="0"><i></i>Mode démo<span class="tip">Les recherches Internet, l'IA et la découverte de contacts demandent la version complète avec ses clés API. Ici, tout le reste fonctionne avec ce que vous saisissez.</span></span></div><div class="wrap" id="view"></div></main>
+  <main><div class="topbar"><span class="crumb" id="crumb"></span><span class="demo-chip" tabindex="0"><i></i>Mode démo<span class="tip">Les recherches Internet, l'IA et la découverte de contacts demandent la version complète avec ses clés API. Ici, tout le reste fonctionne avec ce que vous saisissez.</span></span></div><div class="wrap" id="view" tabindex="-1" style="outline:none"></div></main>
 </div>
 <div id="layer"></div>
 
@@ -291,9 +330,11 @@ details summary { cursor: pointer; color: var(--ink-3); font-size: 12.5px; }
 const KEY = "careerly-demo-v1";
 const uid = () => Math.random().toString(36).slice(2, 10);
 const STAGES_APP = ["En recherche", "Intéressé", "Réseau", "Candidature envoyée", "Test en ligne", "Entretien", "Tour final", "Offre", "Acceptée", "Refusée"];
+const PREP = ["Comptabilité : les 3 états financiers", "Valorisation : DCF et multiples", "LBO : sources & emplois, TRI", "Immobilier : NOI, taux de capitalisation, rendement", "M&A : processus et synergies", "Actualité des deals du fonds", "« Présentez-vous » en 2 minutes", "Pourquoi ce fonds, pourquoi ce poste", "Exemple de travail en équipe (STAR)", "Questions à poser au recruteur"];
+const prepPct = (a) => Math.round(((a.prep || []).length / PREP.length) * 100);
 const STAGES_NET = ["Découvert", "Présélectionné", "Message rédigé", "Contacté", "A répondu", "Appel prévu", "Appel fait", "Relance", "Recommandation"];
 const TYPES = { TEXT: "Texte", LONG: "Texte long", NUMBER: "Nombre", CURRENCY: "Montant", DATE: "Date", BOOL: "Oui / Non", SELECT: "Choix", URL: "Lien", AI: "Recherche IA" };
-const CONF = { VERIFIED: ["Vérifié", "good", "var(--good)", "Source officielle de l'entreprise"], REPORTED: ["Rapporté", "ac", "var(--accent)", "Source tierce publique"], ESTIMATED: ["Estimé", "warn", "var(--warn)", "Présenté comme estimation par la source"], CONFLICTING: ["Contradictoire", "bad", "var(--bad)", "Les sources se contredisent"] };
+const CONF = { VERIFIED: ["Vérifié", "good", "var(--good)", "Source officielle de l'entreprise"], REPORTED: ["Rapporté", "info", "var(--s1)", "Source tierce publique"], ESTIMATED: ["Estimé", "warn", "var(--warn)", "Présenté comme estimation par la source"], CONFLICTING: ["Contradictoire", "bad", "var(--bad)", "Les sources se contredisent"] };
 
 function seed() {
   const f = (name, type, extra = {}) => ({ id: uid(), name, type, ...extra });
@@ -410,6 +451,7 @@ async function copy(text) {
   catch { toast("Copie impossible ici : sélectionnez le texte et copiez-le avec Ctrl+C"); }
 }
 const ICON = {
+  echeances: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3"/>',
   accueil: '<path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   entreprises: '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M8 8h3M8 12h3M8 16h3M3 21h18"/>',
   import: '<path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/>',
@@ -418,25 +460,29 @@ const ICON = {
   candidatures: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/>',
   classement: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
 };
-const NAV = [["accueil", "Accueil"], ["entreprises", "Entreprises"], ["import", "Importer un fichier"], ["recherche", "Recherche"], ["reseau", "Réseau"], ["candidatures", "Candidatures"], ["classement", "Classement"]];
+const NAV = [["accueil", "Accueil"], ["entreprises", "Entreprises"], ["import", "Importer un fichier"], ["recherche", "Recherche"], ["reseau", "Réseau"], ["candidatures", "Candidatures"], ["echeances", "Échéances"], ["classement", "Classement"]];
+const VIEWS = () => ({ accueil: viewHome, entreprises: viewTable, import: viewImport, recherche: viewResearch, reseau: viewNetwork, candidatures: viewApps, echeances: viewAgenda, classement: viewRanking });
 
 // ───────────────────────── Shell ─────────────────────────
 function shell() {
   $("#wsName").innerHTML = `<span class="k">Espace</span><b>${esc(S.ws.name)}</b><small>${esc(S.ws.locations.join(" · "))}</small>`;
   const cur = location.hash.slice(1) || "accueil";
-  const cnt = { entreprises: S.rows.length, reseau: S.contacts.length, candidatures: S.apps.length };
+  const due = agendaItems().filter((i) => i.overdue).length;
+  const cnt = { entreprises: S.rows.length, reseau: S.contacts.length, candidatures: S.apps.length, echeances: due || "" };
   const link = ([k, l]) => `<a href="#${k}" ${k === cur ? 'aria-current="page"' : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}${cnt[k] ? `<span class="cnt">${cnt[k]}</span>` : ""}</a>`;
   $("#nav").innerHTML = link(NAV[0]) + '<span class="grp">Rechercher</span>' + NAV.slice(1, 4).map(link).join("") + '<span class="grp">Agir</span>' + NAV.slice(4).map(link).join("");
+  const dark = document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  $("#themeBtn").textContent = dark ? "☀ Thème clair" : "☾ Thème sombre";
   $("#crumb").innerHTML = `${esc(S.ws.name)} / <b>${esc((NAV.find(([k]) => k === cur) || NAV[0])[1])}</b>`;
 }
 const banner = "";
 function route() {
   shell(); closeLayer(); $("#side").classList.remove("open");
   const v = location.hash.slice(1) || "accueil";
-  const fn = { accueil: viewHome, entreprises: viewTable, import: viewImport, recherche: viewResearch, reseau: viewNetwork, candidatures: viewApps, classement: viewRanking }[v] || viewHome;
-  $("#view").innerHTML = banner + fn(); bind(v); window.scrollTo(0, 0);
+  const fn = VIEWS()[v] || viewHome;
+  $("#view").innerHTML = banner + fn(); bind(v); window.scrollTo(0, 0); $("#view").focus({ preventScroll: true });
 }
-function rerender() { const y = window.scrollY; const v = location.hash.slice(1) || "accueil"; const fn = { accueil: viewHome, entreprises: viewTable, import: viewImport, recherche: viewResearch, reseau: viewNetwork, candidatures: viewApps, classement: viewRanking }[v] || viewHome; $("#view").innerHTML = banner + fn(); bind(v); shell(); window.scrollTo(0, y); }
+function rerender() { const y = window.scrollY; const v = location.hash.slice(1) || "accueil"; const fn = VIEWS()[v] || viewHome; $("#view").innerHTML = banner + fn(); bind(v); shell(); window.scrollTo(0, y); }
 
 // ───────────────────────── Home ─────────────────────────
 function actions() {
@@ -455,6 +501,25 @@ function actions() {
 const PAL = ["#12795a", "#2a78d6", "#b8791d", "#8a4fc4", "#c8433a", "#0f8a9a", "#5b6b1f", "#b04a7a"];
 function av(name, size) { const n = String(name || "?").trim(); const ini = n.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w[0])).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?"; let h = 0; for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return `<span class="mono-av" aria-hidden="true" style="background:${PAL[h % PAL.length]}${size ? `;width:${size}px;height:${size}px` : ""}">${esc(ini)}</span>`; }
 const fmtD = (d) => (d ? new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "");
+function steps() {
+  const anyEv = S.rows.some((r) => Object.values(r.cells).some((c) => (c.ev || []).length));
+  return [
+    ["Préciser votre objectif", "Villes et postes visés guident la recherche.", "#accueil", S.ws.objective.length > 20, "editws"],
+    ["Importer votre liste", "Déposez votre Excel d'employeurs.", "#import", S.rows.length > 5 || S.imported],
+    ["Ajouter une valeur sourcée", "Ouvrez une entreprise, « + Valeur avec sa source ».", "#entreprises", anyEv],
+    ["Classer vos priorités", "Marquez une entreprise « Prioritaire ».", "#entreprises", S.rows.some((r) => r.prio === "high")],
+    ["Ajouter un contact", "Quelqu'un à qui écrire chez un fonds cible.", "#reseau", S.contacts.length > 0],
+    ["Suivre une candidature", "Même au stade de l'idée.", "#candidatures", S.apps.length > 0],
+  ];
+}
+function startCard() {
+  const st = steps(); const done = st.filter((x) => x[3]).length;
+  if (done === st.length || S.hideStart) return "";
+  const pct = done / st.length; const C = 2 * Math.PI * 26;
+  return `<div class="card start"><div><h2>Premiers pas</h2><p>Six étapes pour prendre l'application en main. ${done} sur ${st.length} faites.</p>
+    <ol>${st.map(([t, d, h, ok, act]) => `<li class="${ok ? "done" : ""}"><a href="${h}" ${act ? `data-act="${act}"` : ""}><span class="ck">${ok ? "✓" : ""}</span><span><b>${t}</b><small>${d}</small></span></a></li>`).join("")}</ol></div>
+    <div style="display:grid;justify-items:center;gap:6px;align-self:start"><svg class="ring" viewBox="0 0 64 64" role="img" aria-label="${Math.round(pct * 100)} % terminé"><circle cx="32" cy="32" r="26" fill="none" stroke="var(--sunk)" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="var(--mono)">${done}/${st.length}</text></svg><button class="btn sm ghost" data-act="hidestart">Masquer</button></div></div>`;
+}
 function viewHome() {
   const a = actions();
   const filled = S.fields.filter((f) => f.type === "AI").reduce((x, f) => x + S.rows.filter((r) => r.cells[f.id]?.v).length, 0);
@@ -466,6 +531,7 @@ function viewHome() {
       <div class="row" style="margin-top:18px"><button class="btn sm" data-act="editws" style="background:transparent;color:#e6efe9;border-color:rgb(255 255 255 / .25)">Modifier l'objectif</button></div></div>
     <div class="figs">${[["Entreprises", S.rows.length, "#entreprises"], ["Valeurs sourcées", filled, "#entreprises"], ["Contacts", S.contacts.length, "#reseau"], ["Candidatures", S.apps.length, "#candidatures"]].map(([l, n, h]) => `<a href="${h}"><b class="num">${n}</b><span>${l}</span></a>`).join("")}</div>
   </section>
+  ${startCard()}
   <div class="grid g2">
     <div class="card"><h2>Prochaines actions</h2><p>Classées selon vos dates limites, vos relances et les données manquantes.</p>
       <div class="nba">${a.map((x) => `<a href="${x.h}" class="k-${x.k}"><i></i><span><span class="badge out" style="margin-bottom:5px">${KIND[x.k]}</span><b>${esc(x.t)}</b><small>${esc(x.r)}</small></span><span class="go">›</span></a>`).join("") || '<p class="meta">Rien d\'urgent.</p>'}</div></div>
@@ -482,14 +548,16 @@ function viewHome() {
 }
 
 // ───────────────────────── Table ─────────────────────────
-let sort = null, search = "", editing = null;
+let sort = null, search = "", editing = null, triage = "all";
+const PRIO = { high: ["★ Prioritaire", "warn"], medium: ["Moyenne", "ac"], low: ["Basse", "out"], excluded: ["Écartée", "bad"] };
 function viewTable() {
-  let rows = S.rows.filter((r) => !search || Object.values(r.cells).some((c) => String(c.v ?? "").toLowerCase().includes(search.toLowerCase())));
+  let rows = S.rows.filter((r) => (!search || Object.values(r.cells).some((c) => String(c.v ?? "").toLowerCase().includes(search.toLowerCase())))
+    && (triage === "all" || (triage === "high" && r.prio === "high") || (triage === "active" && r.prio !== "excluded") || (triage === "todo" && S.fields.some((f) => f.type === "AI" && !r.cells[f.id]?.v))));
   if (sort) { const f = S.fields.find((x) => x.id === sort.id); rows = [...rows].sort((a, b) => { const x = a.cells[f.id]?.v ?? "", y = b.cells[f.id]?.v ?? ""; if (x === "" && y === "") return 0; if (x === "") return 1; if (y === "") return -1; const nx = num(x), ny = num(y); const r = nx != null && ny != null ? nx - ny : String(x).localeCompare(String(y), "fr", { numeric: true }); return sort.dir * r; }); }
   return `
   <div class="head"><div><span class="eyebrow">Vos employeurs cibles</span><h1>Entreprises</h1><p class="sub">Double-cliquez sur une cellule pour la modifier. Cliquez sur un nom pour ouvrir sa fiche, ses preuves et son historique.</p></div>
-    <div class="row"><button class="btn" data-act="copycsv">Copier en CSV</button><button class="btn" data-act="addfield">+ Ajouter un champ</button><button class="btn pri" data-act="research" data-scope="table">✦ Rechercher les champs IA</button></div></div>
-  <div class="toolbar"><label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><input class="in" id="q" placeholder="Rechercher dans le tableau" value="${esc(search)}" aria-label="Rechercher"></label><span class="meta num" style="margin-left:auto">${rows.length} / ${S.rows.length} lignes</span></div>
+    <div class="row"><button class="btn" data-act="copycsv">Copier en CSV</button><button class="btn" data-act="addfield">+ Ajouter un champ</button><button class="btn" data-act="verify">Vérifier en ligne</button><button class="btn pri" data-act="research" data-scope="table">✦ Rechercher les champs IA</button></div></div>
+  <div class="toolbar"><label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><input class="in" id="q" placeholder="Rechercher dans le tableau" value="${esc(search)}" aria-label="Rechercher"></label><span class="chips" role="group" aria-label="Filtrer">${[["all", "Toutes"], ["high", "★ Prioritaires"], ["active", "Sans les écartées"], ["todo", "À compléter"]].map(([k, l]) => `<button type="button" data-triage="${k}" aria-pressed="${triage === k}">${l}</button>`).join("")}</span><span class="meta num" style="margin-left:auto">${rows.length} / ${S.rows.length} lignes</span></div>
   <div class="tablebox"><table class="t" aria-label="Entreprises"><thead><tr>${S.fields.map((f) => `<th data-sort="${f.id}" class="${f.type === "AI" ? "ai" : ""}" title="${esc(TYPES[f.type])}${f.prompt ? " · " + esc(f.prompt) : ""}">${f.type === "AI" ? "✦ " : ""}${esc(f.name)}<span class="ty">${esc(TYPES[vt(f)])}</span> ${sort?.id === f.id ? (sort.dir > 0 ? "↑" : "↓") : ""}</th>`).join("")}</tr></thead>
   <tbody>${rows.map((r) => `<tr>${S.fields.map((f) => cellHtml(r, f)).join("")}</tr>`).join("")}</tbody></table></div>
   <form class="addrow" id="addRow"><input class="in" id="newRow" placeholder="Ajouter une entreprise…" aria-label="Nouvelle entreprise"><button class="btn" type="submit">Ajouter</button></form>
@@ -501,7 +569,7 @@ function cellHtml(r, f) {
     const t = vt(f);
     return `<td><input class="in" id="cellEdit" value="${esc(c.v ?? "")}" ${t === "DATE" ? 'type="date"' : ""} aria-label="${esc(f.name)}"></td>`;
   }
-  if (f.primary) return `<td class="name"><a href="#entreprises" data-open="${r.id}">${av(c.v)}<span>${esc(c.v || "Sans nom")}</span></a></td>`;
+  if (f.primary) return `<td class="name"><a href="#entreprises" data-open="${r.id}">${av(c.v)}<span>${esc(c.v || "Sans nom")}</span>${r.prio === "high" ? '<span title="Prioritaire" style="color:var(--honey)">★</span>' : r.prio === "excluded" ? '<span class="badge bad">Écartée</span>' : ""}</a></td>`;
   const conf = c.conf ? `<i class="dot" style="background:${CONF[c.conf][2]}" title="${CONF[c.conf][0]}"></i>` : "";
   const isNum = ["NUMBER", "CURRENCY"].includes(vt(f));
   const shown = vt(f) === "URL" && c.v ? `<a class="lnk" href="${esc(/^https?:/.test(c.v) ? c.v : "https://" + c.v)}" target="_blank" rel="noopener noreferrer">${esc(String(c.v).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a>` : vt(f) === "SELECT" && c.v ? `<span class="badge ac">${esc(c.v)}</span>` : c.v ? `<span class="txt ${isNum ? "num" : ""}">${esc(fmt(f, c.v))}</span>` : "";
@@ -522,6 +590,11 @@ function openRow(rid) {
   const r = S.rows.find((x) => x.id === rid); if (!r) return;
   layer(`<div class="scrim" data-close></div><aside class="panel" role="dialog" aria-label="${esc(rowName(r))}"><header><div class="id">${av(rowName(r))}<div><span class="eyebrow">Fiche entreprise</span><h2>${esc(rowName(r))}</h2><p class="meta mono" style="margin:2px 0 0">${esc(String(r.cells[S.fields[1]?.id]?.v || "").replace(/^https?:\/\/(www\.)?/, ""))}</p></div></div><button class="x" data-close aria-label="Fermer">×</button></header>
   <div class="body">
+    <section class="sec" aria-label="Votre suivi"><div class="lab">Votre suivi</div>
+      <div class="prio" role="group" aria-label="Priorité">${[["", "Aucune"], ...Object.entries(PRIO).map(([k, [l]]) => [k, l])].map(([k, l]) => `<button type="button" data-prio="${k}" data-r="${r.id}" aria-pressed="${(r.prio || "") === k}">${l}</button>`).join("")}</div>
+      <textarea class="in" id="rowNotes" data-r="${r.id}" rows="2" placeholder="Notes privées : impressions, contacts, idées (jamais utilisées dans les recherches)">${esc(r.notes || "")}</textarea>
+      <div class="vstat"><span class="badge out">Non vérifiée en ligne</span><span class="meta">La version complète vérifie que l'entreprise existe vraiment (site officiel trouvé ou non) et complète son site web. 1 crédit.</span></div>
+    </section>
     <div class="row"><button class="btn sm" data-act="research" data-scope="row" data-r="${r.id}">✦ Rechercher cette ligne</button><button class="btn sm" data-act="newapp" data-company="${esc(rowName(r))}">Suivre une candidature</button><button class="btn sm" data-act="newcontact" data-company="${esc(rowName(r))}">Ajouter un contact ici</button></div>
     ${S.fields.filter((f) => !f.primary).map((f) => { const c = r.cells[f.id] || {}; return `
     <section class="sec" aria-label="${esc(f.name)}">
@@ -669,7 +742,7 @@ function commitImport() {
   for (const r of imp.data) { const n = String(r[nm.idx] ?? "").trim(); if (!n || orgNameError(n)) continue; const k = n.toLowerCase(); if (seen.has(k) && skip) continue; seen.add(k);
     let row = skip ? exist.get(k) : null; if (row) updated++; else { row = { id: uid(), cells: {} }; S.rows.push(row); exist.set(k, row); added++; }
     for (const m of kept) { const v = r[m.idx]; if (v === null || v === "") continue; const f = S.fields.find((x) => x.id === fmap.get(m.idx)); if (m !== nm && validate(f, String(v))) { empty++; continue; } if (row.cells[f.id]?.lock) continue; row.cells[f.id] = { ...(row.cells[f.id] || {}), v: String(v) }; } }
-  save(); imp = null; toast(`Import terminé : ${added} nouvelles lignes, ${updated} mises à jour${empty ? `, ${empty} valeurs invalides laissées vides` : ""}`); location.hash = "entreprises";
+  S.imported = true; save(); imp = null; toast(`Import terminé : ${added} nouvelles lignes, ${updated} mises à jour${empty ? `, ${empty} valeurs invalides laissées vides` : ""}`); location.hash = "entreprises";
 }
 
 // ───────────────────────── Research hub ─────────────────────────
@@ -760,18 +833,43 @@ function viewApps() {
   : `<div class="empty"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="10" width="36" height="30" rx="4"/><path d="M18 10V6h12v4M6 22h36"/></svg><b>Aucune candidature suivie</b><p>Ajoutez un poste, même s'il n'est encore qu'une idée.</p><div style="margin-top:10px"><button class="btn pri" data-act="newapp">+ Nouvelle candidature</button></div></div>`}`;
 }
 function appForm(id, company = "") {
-  const a = S.apps.find((x) => x.id === id) || { role: "", company, stage: "Intéressé", deadline: "", url: "", next: "", notes: "" };
+  const a = S.apps.find((x) => x.id === id) || { role: "", company, stage: "Intéressé", deadline: "", url: "", next: "", notes: "", prep: [], interviews: [] };
   layer(`<div class="scrim" data-close></div><form class="modal" id="aForm" role="dialog" aria-label="Candidature"><div class="row" style="justify-content:space-between"><h2>${id ? "Modifier la candidature" : "Nouvelle candidature"}</h2><button type="button" class="x" data-close aria-label="Fermer">×</button></div>
     <div class="grid" style="grid-template-columns:1fr 1fr"><label class="f">Poste<input class="in" id="aR" required value="${esc(a.role)}" placeholder="Analyste investissement immobilier"></label><label class="f">Employeur<input class="in" id="aC" list="cos2" value="${esc(a.company)}"><datalist id="cos2">${S.rows.map((r) => `<option>${esc(rowName(r))}</option>`).join("")}</datalist></label>
     <label class="f">Étape<select class="in" id="aS">${STAGES_APP.map((s) => `<option ${s === a.stage ? "selected" : ""}>${s}</option>`).join("")}</select></label><label class="f">Date limite<input class="in" type="date" id="aD" value="${esc(a.deadline)}"></label>
     <label class="f">Lien de l'offre<input class="in" id="aU" value="${esc(a.url)}"></label><label class="f">Prochaine action<input class="in" id="aN" value="${esc(a.next)}" placeholder="Envoyer le CV"></label></div>
     <label class="f">Notes (tests, entretiens, retours)<textarea class="in" id="aT">${esc(a.notes)}</textarea></label>
+    <fieldset class="sec" style="margin:0"><legend class="lab" style="padding:0 4px">Entretien</legend>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px"><label class="f">Tour<input class="in" id="iR" value="${esc(a.interviews?.[0]?.round || "")}" placeholder="Premier tour, case study…"></label><label class="f">Date<input class="in" type="date" id="iD" value="${esc(a.interviews?.[0]?.date || "")}"></label></div>
+      <div class="lab" style="margin-top:4px">Préparation · <span id="prepPct">${prepPct(a)}</span> %</div>
+      <div class="prep">${PREP.map((t, i) => `<label><input type="checkbox" data-prep="${i}" ${(a.prep || []).includes(i) ? "checked" : ""}> ${esc(t)}</label>`).join("")}</div>
+    </fieldset>
     <div class="row" style="justify-content:space-between">${id ? `<button type="button" class="btn ghost" data-act="delapp" data-a="${id}" style="color:var(--bad)">Supprimer</button>` : "<span></span>"}<span class="row"><button type="button" class="btn ghost" data-close>Annuler</button><button class="btn pri" type="submit">Enregistrer</button></span></div></form>`);
   $("#aForm").onsubmit = (e) => { e.preventDefault();
     const role = $("#aR").value.trim(), co = $("#aC").value.trim(), url = $("#aU").value.trim(), dl = $("#aD").value;
     const err = role.length < 3 ? "Indiquez l'intitulé du poste" : /^[\d\s.,]+$/.test(role) ? "L'intitulé du poste ne peut pas être un nombre" : role.length > 100 ? "Intitulé trop long" : co && orgNameError(co) ? `Employeur : ${orgNameError(co)}` : url && !/^https?:\/\/[^\s]+\.[a-z]{2,}/i.test(url) ? "Le lien de l'offre doit commencer par http:// ou https://" : dl && (new Date(dl).getFullYear() < 2020 || new Date(dl).getFullYear() > 2035) ? "Date limite improbable : vérifiez l'année" : null;
     if (err) return toast(err);
-    const v = { role: $("#aR").value.trim(), company: $("#aC").value.trim(), stage: $("#aS").value, deadline: $("#aD").value, url: $("#aU").value.trim(), next: $("#aN").value.trim(), notes: $("#aT").value.trim() }; if (id) Object.assign(S.apps.find((x) => x.id === id), v); else S.apps.push({ id: uid(), ...v }); save(); closeLayer(); toast("Candidature enregistrée"); if (location.hash !== "#candidatures") location.hash = "candidatures"; else rerender(); };
+    const prep = [...document.querySelectorAll("[data-prep]:checked")].map((x) => +x.dataset.prep);
+    const ivR = $("#iR").value.trim(), ivD = $("#iD").value;
+    const v = { prep, interviews: ivR || ivD ? [{ round: ivR, date: ivD }] : [], role: $("#aR").value.trim(), company: $("#aC").value.trim(), stage: $("#aS").value, deadline: $("#aD").value, url: $("#aU").value.trim(), next: $("#aN").value.trim(), notes: $("#aT").value.trim() }; if (id) Object.assign(S.apps.find((x) => x.id === id), v); else S.apps.push({ id: uid(), ...v }); save(); closeLayer(); toast("Candidature enregistrée"); if (location.hash !== "#candidatures") location.hash = "candidatures"; else rerender(); };
+}
+
+// ───────────────────────── Agenda ─────────────────────────
+function agendaItems() {
+  const t0 = new Date(today()); const out = [];
+  for (const a of S.apps) {
+    if (a.deadline) out.push({ d: a.deadline, k: "Date limite", tone: "bad", t: `Candidature : ${a.role}`, s: a.company, h: "#candidatures", app: a.id });
+    for (const iv of a.interviews || []) if (iv.date) out.push({ d: iv.date, k: "Entretien", tone: "ac", t: `${iv.round || "Entretien"} · ${a.role}`, s: `${a.company || ""} · préparation ${prepPct(a)} %`, h: "#candidatures", app: a.id });
+  }
+  for (const c of S.contacts) for (const n of c.log || []) if (n.follow && !n.done) out.push({ d: n.follow, k: "Relance", tone: "warn", t: `Relancer ${c.name}`, s: c.company, h: "#reseau", contact: c.id });
+  return out.map((x) => ({ ...x, overdue: new Date(x.d) < t0 })).sort((a, b) => new Date(a.d) - new Date(b.d));
+}
+function viewAgenda() {
+  const items = agendaItems(); const t0 = new Date(today()); const wk = new Date(t0.getTime() + 7 * 864e5);
+  const groups = [["En retard", items.filter((i) => i.overdue), "late"], ["Cette semaine", items.filter((i) => !i.overdue && new Date(i.d) < wk), ""], ["Plus tard", items.filter((i) => new Date(i.d) >= wk), ""]];
+  return `<div class="head"><div><span class="eyebrow">Votre calendrier</span><h1>Échéances</h1><p class="sub">Toutes vos dates au même endroit : dates limites, entretiens et relances.</p></div></div>
+  ${items.length ? `<div class="agenda grid">${groups.filter(([, g]) => g.length).map(([l, g, cls]) => `<section><h2 class="grp ${cls}">${l} · ${g.length}</h2><div class="card" style="padding:0">${g.map((i) => `<a class="it" href="${i.h}" ${i.app ? `data-app="${i.app}"` : ""} ${i.contact ? `data-contact="${i.contact}"` : ""}><span class="d">${new Date(i.d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}</span><span style="min-width:0"><b>${esc(i.t)}</b><span class="meta">${esc(i.s || "")}</span></span><span class="badge ${i.tone}">${i.k}</span></a>`).join("")}</div></section>`).join("")}</div>`
+  : `<div class="empty"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="10" width="36" height="32" rx="4"/><path d="M6 20h36M16 6v8M32 6v8"/></svg><b>Rien de prévu pour l'instant</b><p>Ajoutez une date limite à une candidature, un entretien, ou une relance après un échange avec un contact.</p></div>`}`;
 }
 
 // ───────────────────────── Ranking ─────────────────────────
@@ -796,19 +894,55 @@ const valNum = (r, fid) => { const f = S.fields.find((x) => x.id === fid); const
 function layer(html) { $("#layer").innerHTML = html; const first = $("#layer input, #layer select, #layer textarea, #layer button"); first && first.focus(); }
 function closeLayer() { $("#layer").innerHTML = ""; }
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if ($("#layer").innerHTML) closeLayer(); else if (editing) { editing = null; rerender(); } } });
-$("#layer").addEventListener("click", (e) => { if (e.target.closest("[data-close]")) return closeLayer(); const t = e.target.closest("[data-act]"); if (t) act(t.dataset.act, t.dataset, t); });
+$("#layer").addEventListener("click", (e) => {
+  if (e.target.closest("[data-close]")) return closeLayer();
+  const pr = e.target.closest("[data-prio]"); if (pr) { const r = S.rows.find((x) => x.id === pr.dataset.r); r.prio = pr.dataset.prio || undefined; save(); toast(pr.dataset.prio ? `Priorité : ${PRIO[pr.dataset.prio][0]}` : "Priorité retirée"); rerender(); return openRow(r.id); }
+  const pal = e.target.closest("[data-go]"); if (pal) return palGo(+pal.dataset.go);
+  const t = e.target.closest("[data-act]"); if (t) act(t.dataset.act, t.dataset, t);
+});
+$("#layer").addEventListener("change", (e) => {
+  if (e.target.id === "rowNotes") { const r = S.rows.find((x) => x.id === e.target.dataset.r); r.notes = e.target.value.slice(0, 5000); save(); toast("Notes enregistrées"); }
+  if (e.target.dataset.prep !== undefined) { const n = document.querySelectorAll("[data-prep]:checked").length; $("#prepPct").textContent = Math.round((n / PREP.length) * 100); }
+});
+$("#themeBtn").onclick = () => { const root = document.documentElement; const dark = root.dataset.theme === "dark" || (!root.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches); root.dataset.theme = dark ? "light" : "dark"; try { localStorage.setItem(KEY + "-theme", root.dataset.theme); } catch {} shell(); };
+try { const th = localStorage.getItem(KEY + "-theme"); if (th) document.documentElement.dataset.theme = th; } catch {}
+
+// ── Recherche rapide (Ctrl+K) ──
+let palHits = [], palSel = 0;
+function palSearch(q) {
+  const n = q.trim().toLowerCase(); const hits = [];
+  for (const [k, l] of NAV) if (!n || l.toLowerCase().includes(n)) hits.push({ k: "Page", t: l, go: () => (location.hash = k) });
+  if (n.length >= 1) {
+    for (const r of S.rows) if (rowName(r).toLowerCase().includes(n)) hits.unshift({ k: "Entreprise", t: rowName(r), s: r.cells[S.fields[1]?.id]?.v, go: () => { location.hash = "entreprises"; setTimeout(() => openRow(r.id), 30); } });
+    for (const c of S.contacts) if (`${c.name} ${c.company} ${c.title}`.toLowerCase().includes(n)) hits.unshift({ k: "Contact", t: c.name, s: [c.title, c.company].filter(Boolean).join(" · "), go: () => { location.hash = "reseau"; setTimeout(() => openContact(c.id), 30); } });
+    for (const a of S.apps) if (`${a.role} ${a.company}`.toLowerCase().includes(n)) hits.unshift({ k: "Candidature", t: a.role, s: a.company, go: () => { location.hash = "candidatures"; setTimeout(() => appForm(a.id), 30); } });
+  }
+  palHits = hits.slice(0, 12); palSel = 0; drawPal();
+}
+function drawPal() { const ul = $("#palList"); if (!ul) return; ul.innerHTML = palHits.length ? palHits.map((h, i) => `<li><button type="button" data-go="${i}" aria-selected="${i === palSel}">${h.k === "Page" ? "" : av(h.t, 24)}<span class="t"><b>${esc(h.t)}</b>${h.s ? `<small>${esc(h.s)}</small>` : ""}</span><span class="badge out">${h.k}</span></button></li>`).join("") : '<li class="meta" style="padding:14px;text-align:center">Aucun résultat</li>'; }
+function palGo(i) { const h = palHits[i]; if (!h) return; closeLayer(); h.go(); }
+function openPalette() {
+  layer(`<div class="scrim" data-close></div><div class="pal" role="dialog" aria-label="Recherche rapide"><div class="inp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="color:var(--ink-3)"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><input id="palIn" placeholder="Entreprise, contact, candidature, page…" aria-label="Rechercher" autocomplete="off"></div><ul id="palList" role="listbox"></ul><div class="hint"><span><kbd>↑↓</kbd> naviguer</span><span><kbd>Entrée</kbd> ouvrir</span><span><kbd>Échap</kbd> fermer</span></div></div>`);
+  const inp = $("#palIn"); inp.focus(); palSearch("");
+  inp.oninput = () => palSearch(inp.value);
+  inp.onkeydown = (e) => { if (e.key === "ArrowDown") { e.preventDefault(); palSel = Math.min(palHits.length - 1, palSel + 1); drawPal(); } if (e.key === "ArrowUp") { e.preventDefault(); palSel = Math.max(0, palSel - 1); drawPal(); } if (e.key === "Enter") { e.preventDefault(); palGo(palSel); } };
+}
+$("#searchBtn").onclick = openPalette;
+document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openPalette(); } });
 $("#menuBtn").onclick = () => $("#side").classList.toggle("open");
 $("#resetBtn").onclick = (e) => { const b = e.currentTarget; if (b.dataset.armed) { S = seed(); save(); imp = null; delete b.dataset.armed; b.textContent = "Réinitialiser la démo"; toast("Démo réinitialisée"); location.hash = "accueil"; route(); } else { b.dataset.armed = "1"; b.textContent = "Confirmer : tout effacer ?"; setTimeout(() => { delete b.dataset.armed; b.textContent = "Réinitialiser la démo"; }, 4000); } };
 
 function bind(v) {
   const view = $("#view");
   view.onclick = (e) => {
-    const t = e.target.closest("[data-act],[data-open],[data-sort],[data-contact],[data-app],[data-cx]"); if (!t) return;
+    const t = e.target.closest("[data-act],[data-open],[data-sort],[data-contact],[data-app],[data-cx],[data-triage]"); if (!t) return;
+    if (t.matches("a.it")) e.preventDefault();
     if (t.dataset.open) { e.preventDefault(); return openRow(t.dataset.open); }
     if (t.dataset.sort) { sort = sort?.id === t.dataset.sort ? (sort.dir > 0 ? { id: sort.id, dir: -1 } : null) : { id: t.dataset.sort, dir: 1 }; return rerender(); }
     if (t.dataset.contact && !e.target.closest("select")) return openContact(t.dataset.contact);
     if (t.dataset.app && !e.target.closest("select")) return appForm(t.dataset.app);
     if (t.dataset.cx !== undefined) { S.criteria.splice(+t.dataset.cx, 1); save(); return rerender(); }
+    if (t.dataset.triage) { triage = t.dataset.triage; return rerender(); }
     act(t.dataset.act, t.dataset, t);
   };
   view.ondblclick = (e) => { const td = e.target.closest("td.cell"); if (td) startEdit(td.dataset.r, td.dataset.f); };
@@ -840,15 +974,22 @@ function bind(v) {
 function startEdit(r, f) { const row = S.rows.find((x) => x.id === r); if (row.cells[f]?.lock) return toast("Valeur confirmée : déverrouillez-la depuis la fiche pour la modifier"); editing = { r, f }; rerender(); }
 function act(a, d, el) {
   if (a === "addfield") return fieldForm();
+  if (a === "hidestart") { S.hideStart = true; save(); return rerender(); }
+  if (a === "verify") return layer(`<div class="scrim" data-close></div><div class="modal" role="dialog" aria-label="Vérifier en ligne"><div class="row" style="justify-content:space-between"><h2>Vérifier que vos employeurs existent</h2><button class="x" data-close aria-label="Fermer">×</button></div>
+    <p class="meta" style="margin:0">Pour chaque nom, la version complète lance une recherche web et attribue un statut, avec sa source :</p>
+    <div class="grid" style="gap:8px"><div class="row"><span class="badge good">Vérifiée</span><span class="meta">un site officiel portant ce nom a été trouvé (le site web est complété)</span></div><div class="row"><span class="badge warn">À confirmer</span><span class="meta">seuls des annuaires (LinkedIn, Societe.com…) la citent</span></div><div class="row"><span class="badge bad">Introuvable</span><span class="meta">aucune page publique ne la nomme : vérifiez l'orthographe</span></div></div>
+    <div class="grid g3" style="grid-template-columns:repeat(3,1fr)"><div class="sec"><span class="meta">Entreprises</span><b class="num" style="font-size:18px">${S.rows.length}</b></div><div class="sec"><span class="meta">Coût</span><b class="num" style="font-size:18px">${S.rows.length} crédits</b></div><div class="sec"><span class="meta">IA utilisée</span><b style="font-size:18px">Aucune</b></div></div>
+    <div class="banner"><b>Non disponible dans la démo :</b> cette vérification a besoin d'une connexion à un moteur de recherche (version complète).</div>
+    <div class="row" style="justify-content:flex-end"><button class="btn ghost" data-close>Fermer</button><button class="btn pri" disabled>Approuver et lancer</button></div></div>`);
   if (a === "research") return researchModal(d.scope, d.r);
   if (a === "evid") return evidenceForm(d.r, d.f);
   if (a === "lock") { const r = S.rows.find((x) => x.id === d.r); const c = r.cells[d.f] || (r.cells[d.f] = {}); c.lock = !c.lock; save(); toast(c.lock ? "Valeur confirmée : elle ne sera jamais écrasée" : "Valeur déverrouillée"); rerender(); return openRow(d.r); }
-  if (a === "delrow") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } S.rows = S.rows.filter((x) => x.id !== d.r); save(); closeLayer(); toast("Entreprise supprimée"); return rerender(); }
+  if (a === "delrow") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } const i = S.rows.findIndex((x) => x.id === d.r); const [gone] = S.rows.splice(i, 1); save(); closeLayer(); rerender(); return toast(`${rowName(gone)} supprimée`, () => { S.rows.splice(i, 0, gone); save(); rerender(); }); }
   if (a === "copycsv") { const q = (s) => `"${String(s ?? "").replace(/"/g, '""').replace(/^([=+\-@])/, "'$1")}"`; return copy([S.fields.map((f) => q(f.name)).join(","), ...S.rows.map((r) => S.fields.map((f) => q(r.cells[f.id]?.v)).join(","))].join("\n")); }
   if (a === "newcontact") return contactForm(d.company || "");
-  if (a === "delcontact") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } S.contacts = S.contacts.filter((c) => c.id !== d.c); save(); closeLayer(); return rerender(); }
+  if (a === "delcontact") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } const i = S.contacts.findIndex((c) => c.id === d.c); const [gone] = S.contacts.splice(i, 1); save(); closeLayer(); rerender(); return toast(`${gone.name} supprimé·e`, () => { S.contacts.splice(i, 0, gone); save(); rerender(); }); }
   if (a === "newapp") return appForm(null, d.company || "");
-  if (a === "delapp") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } S.apps = S.apps.filter((x) => x.id !== d.a); save(); closeLayer(); return rerender(); }
+  if (a === "delapp") { const b = el; if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Confirmer la suppression"; return; } const i = S.apps.findIndex((x) => x.id === d.a); const [gone] = S.apps.splice(i, 1); save(); closeLayer(); rerender(); return toast("Candidature supprimée", () => { S.apps.splice(i, 0, gone); save(); rerender(); }); }
   if (a === "addcrit") { const f = S.fields.find((x) => ["NUMBER", "CURRENCY", "BOOL"].includes(vt(x))); S.criteria.push({ f: f.id, w: Math.max(0, 100 - S.criteria.reduce((x, c) => x + c.w, 0)), dir: "high" }); save(); return rerender(); }
   if (a === "discover") return researchModal("table");
   if (a === "editws") {

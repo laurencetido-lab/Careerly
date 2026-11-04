@@ -18,7 +18,7 @@ export default async function DatasetPage({ params, searchParams }: { params: Pr
     db.datasetRow.findMany({
       where: { datasetId: did },
       orderBy: { position: "asc" },
-      include: { values: { include: { _count: { select: { evidence: true } } } } },
+      include: { values: { include: { _count: { select: { evidence: true } } } }, company: { select: { verifyStatus: true, verifyNote: true, verifySource: true, verifiedAt: true, priority: true } } },
     }),
     db.savedView.findMany({ where: { datasetId: did, userId: user.id }, orderBy: { createdAt: "asc" } }),
     db.workspaceMember.findUnique({ where: { workspaceId_userId: { workspaceId: wid, userId: user.id } } }),
@@ -31,6 +31,8 @@ export default async function DatasetPage({ params, searchParams }: { params: Pr
   const gridRows: GridRow[] = rows.map((r) => ({
     id: r.id,
     companyId: r.companyId,
+    verify: r.company ? { status: r.company.verifyStatus, note: r.company.verifyNote, source: r.company.verifySource, at: r.company.verifiedAt?.toISOString() ?? null } : undefined,
+    priority: r.company?.priority ?? "NONE",
     cells: Object.fromEntries(
       r.values.map((v) => {
         const t = typeOf.get(v.fieldId) ?? "TEXT";

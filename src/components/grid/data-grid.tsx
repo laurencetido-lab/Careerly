@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
-  ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, Columns3, Download, EyeOff, Filter, Group, Lock, MoreHorizontal, PanelRightOpen, Pencil, Plus, Search, Sparkles, Trash2, Upload, Save,
+  ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, Columns3, Download, EyeOff, Filter, Group, Lock, MoreHorizontal, PanelRightOpen, Pencil, Plus, Search, ShieldCheck, Sparkles, Trash2, Upload, Save,
 } from "lucide-react";
 import { addRow, deleteField, deleteRows, deleteView, moveField, saveView, updateCell, updateField } from "@/app/actions/data";
-import { planDiscovery, planEnrichment, type PlanView } from "@/app/actions/research";
+import { planDiscovery, planEnrichment, planVerification, type PlanView } from "@/app/actions/research";
 import { evaluateFormula } from "@/lib/formula";
 import { FIELD_TYPE_LABELS, storageType } from "@/lib/fields";
 import type { GridField, GridRow, ViewConfig } from "@/lib/grid-types";
@@ -41,6 +41,7 @@ export function DataGrid({ workspaceId, dataset, fields, rows, views, canEdit, o
   const [fieldDialog, setFieldDialog] = useState<GridField | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [newRow, setNewRow] = useState("");
+  const [triage, setTriage] = useState<"ALL" | "HIGH" | "ACTIVE" | "NOT_FOUND" | "UNVERIFIED">("ALL");
 
   useEffect(() => setWidths((w) => ({ ...Object.fromEntries(fields.map((f) => [f.id, f.width])), ...w })), [fields]);
 
@@ -71,6 +72,10 @@ export function DataGrid({ workspaceId, dataset, fields, rows, views, canEdit, o
   const filtered = useMemo(() => {
     const q = view.search.trim().toLowerCase();
     let out = computed.filter((r) => {
+      if (triage === "HIGH" && r.priority !== "HIGH") return false;
+      if (triage === "ACTIVE" && r.priority === "EXCLUDED") return false;
+      if (triage === "NOT_FOUND" && !["NOT_FOUND", "AMBIGUOUS"].includes(r.verify?.status ?? "")) return false;
+      if (triage === "UNVERIFIED" && r.verify?.status !== "UNVERIFIED") return false;
       if (q && !Object.values(r.cells).some((c) => c.display.toLowerCase().includes(q))) return false;
       return view.filters.every((f) => {
         const c = r.cells[f.fieldId];
@@ -99,7 +104,7 @@ export function DataGrid({ workspaceId, dataset, fields, rows, views, canEdit, o
       });
     }
     return out;
-  }, [computed, view]);
+  }, [computed, view, triage]);
 
   const groups = useMemo(() => {
     if (!view.groupBy) return [{ key: "", rows: filtered }];
@@ -178,6 +183,9 @@ export function DataGrid({ workspaceId, dataset, fields, rows, views, canEdit, o
                 </MenuItem>
                 <MenuSeparator />
                 <MenuLabel>Discover</MenuLabel>
+                <MenuItem onSelect={() => start(async () => { const r = await planVerification(workspaceId, { datasetId: dataset.id, rowIds: selected.size ? [...selected] : [] }); if (!r.ok) toast.error(r.error); else setPlan(r.data); })}>
+                  <ShieldCheck /> Verify employers exist online{selected.size ? ` (${selected.size})` : ""}
+                </MenuItem>
                 <MenuItem onSelect={() => start(async () => { const r = await planDiscovery(workspaceId, { scope: "DISCOVER_COMPANIES", objective: "", datasetId: dataset.id, maxResults: 20 }); if (!r.ok) toast.error(r.error); else setPlan(r.data); })}>
                   <Plus /> More employers like these
                 </MenuItem>
@@ -194,6 +202,13 @@ export function DataGrid({ workspaceId, dataset, fields, rows, views, canEdit, o
           <Input className="pl-8" placeholder="Search this table" value={view.search} onChange={(e) => setView({ ...view, search: e.target.value })} aria-label="Search" />
         </div>
         <FilterMenu fields={fields} view={view} setView={setView} />
+        <Select className="h-8 w-auto text-[13px]" value={triage} onChange={(e) => setTriage(e.target.value as typeof triage)} aria-label="Show employers">
+          <option value="ALL">All employers</option>
+          <option value="HIGH">High priority only</option>
+          <option value="ACTIVE">Hide excluded</option>
+          <option value="UNVERIFIED">Not yet verified online</option>
+          <option value="NOT_FOUND">Not found / to confirm</option>
+        </Select>
         <Menu>
           <MenuTrigger asChild><Button variant="outline" size="sm"><Group /> {view.groupBy ? `Grouped: ${fields.find((f) => f.id === view.groupBy)?.name}` : "Group"}</Button></MenuTrigger>
           <MenuContent>
@@ -391,6 +406,7 @@ function Cell({ field, row, width, editing, canEdit, onEdit, onCancel, onSave, o
         {c?.confirmed ? <Lock className="mt-0.5 size-3 shrink-0 text-muted-foreground" aria-label="Confirmed by you" /> : null}
         {c?.suggestion ? <span className="mt-1 size-1.5 shrink-0 rounded-full bg-warning ring-2 ring-warning/30" title={`Research suggests: ${c.suggestion}`} /> : null}
         <span className="flex shrink-0 gap-0.5 opacity-0 transition group-hover/cell:opacity-100 group-focus-within/row:opacity-100">
+          {field.isPrimary ? <VerifyMark row={row} /> : null}
           {field.isPrimary ? <button className="rounded p-0.5 text-muted-foreground hover:bg-muted" onClick={onOpen} aria-label="Open details"><PanelRightOpen className="size-3.5" /></button> : null}
           {canEdit && !field.isPrimary ? <button className="rounded p-0.5 text-muted-foreground hover:bg-muted" onClick={onEdit} aria-label={`Edit ${field.name}`}><Pencil className="size-3" /></button> : null}
           {onResearch ? <button className="rounded p-0.5 text-primary hover:bg-muted" onClick={onResearch} aria-label={`Research ${field.name}`}><Sparkles className="size-3" /></button> : null}
@@ -398,6 +414,23 @@ function Cell({ field, row, width, editing, canEdit, onEdit, onCancel, onSave, o
         </span>
       </div>
     </td>
+  );
+}
+
+const VERIFY_MARK: Record<string, [string, string, string]> = {
+  VERIFIED: ["✓", "text-success", "Verified online"],
+  AMBIGUOUS: ["?", "text-warning", "Referenced online, official site not found"],
+  NOT_FOUND: ["!", "text-destructive", "Not found online"],
+};
+
+function VerifyMark({ row }: { row: GridRow }) {
+  const m = row.verify ? VERIFY_MARK[row.verify.status] : null;
+  return (
+    <span className="flex shrink-0 items-center gap-0.5 opacity-100">
+      {row.priority === "HIGH" ? <span className="text-warning" title="High priority">★</span> : null}
+      {row.priority === "EXCLUDED" ? <span className="text-xs text-muted-foreground" title="Excluded">⊘</span> : null}
+      {m ? <span className={cn("text-xs font-bold", m[1])} title={`${m[2]}${row.verify?.note ? ` · ${row.verify.note}` : ""}`} aria-label={m[2]}>{m[0]}</span> : null}
+    </span>
   );
 }
 

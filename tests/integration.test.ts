@@ -249,3 +249,34 @@ describe("monitoring and change detection", () => {
     expect(await notify({ userId: u.id, type: "X", title: "t", dedupeKey: "same" })).toBe(false);
   });
 });
+
+describe("employer online verification job", () => {
+  it("marks real employers verified, fills their website, and flags unknown ones", async () => {
+    const { createVerifyPlan } = await import("@/server/research/plan");
+    const u = await mkUser("verify@test.dev");
+    const ws = await mkWorkspace(u, "V");
+    const ds = await db.dataset.create({ data: { workspaceId: ws.id, name: "List" } });
+    const name = await db.fieldDefinition.create({ data: { datasetId: ds.id, key: "company", name: "Company", type: "TEXT", isPrimary: true, coreBinding: "company.name", position: 0 } });
+    const site = await db.fieldDefinition.create({ data: { datasetId: ds.id, key: "website", name: "Website", type: "URL", coreBinding: "company.website", position: 1 } });
+    for (const [i, n] of ["Ardian", "Zorblax Quantum"].entries()) {
+      const c = await db.company.create({ data: { workspaceId: ws.id, name: n, normalizedName: n.toLowerCase() } });
+      const r = await db.datasetRow.create({ data: { datasetId: ds.id, companyId: c.id, position: i } });
+      await db.fieldValue.create({ data: { rowId: r.id, fieldId: name.id, textValue: n } });
+    }
+    pages = { "https://www.ardian.com/": "Ardian, world-leading private investment house." };
+    const plan = await createVerifyPlan(u, ws, { datasetId: ds.id, rowIds: [] });
+    expect(plan.estimatedCredits).toBe(2);
+    const job = await launchPlan(u, plan.id, plan.estimatedCredits, { providers: { ...testProviders, llm: null }, enqueue: false });
+    await runJob(job.id, { ...testProviders, llm: null });
+    const done = await db.researchJob.findUniqueOrThrow({ where: { id: job.id } });
+    expect(done.status).toBe("SUCCEEDED");
+    const ardian = await db.company.findFirstOrThrow({ where: { workspaceId: ws.id, name: "Ardian" } });
+    expect(ardian.verifyStatus).toBe("VERIFIED");
+    expect(ardian.website).toBe("https://www.ardian.com");
+    const cell = await db.fieldValue.findFirst({ where: { fieldId: site.id, row: { companyId: ardian.id } } });
+    expect(cell?.textValue).toBe("https://www.ardian.com");
+    const z = await db.company.findFirstOrThrow({ where: { workspaceId: ws.id, name: "Zorblax Quantum" } });
+    expect(z.verifyStatus).toBe("NOT_FOUND");
+    expect(await db.notification.count({ where: { userId: u.id, type: "COMPANY_NOT_FOUND" } })).toBe(1);
+  });
+});

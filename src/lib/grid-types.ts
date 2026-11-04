@@ -30,6 +30,8 @@ export interface GridCell {
 export interface GridRow {
   id: string;
   companyId: string | null;
+  verify?: { status: string; note: string | null; source: string | null; at: string | null };
+  priority?: string;
   cells: Record<string, GridCell>;
 }
 

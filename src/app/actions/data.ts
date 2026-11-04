@@ -335,6 +335,19 @@ export async function deleteView(workspaceId: string, viewId: string) {
   });
 }
 
+/** The user's own triage of an employer: priority and private notes (never used in research). */
+export async function updateCompany(workspaceId: string, companyId: string, input: unknown) {
+  return action(async () => {
+    await ctx(workspaceId);
+    const c = await db.company.findFirst({ where: { id: companyId, workspaceId } });
+    if (!c) throw new AppError("Employer not found.", "NOT_FOUND");
+    const d = z.object({ priority: z.enum(["NONE", "HIGH", "MEDIUM", "LOW", "EXCLUDED"]).optional(), privateNotes: z.string().max(10000).nullable().optional() }).parse(input);
+    await db.company.update({ where: { id: c.id }, data: d });
+    revalidatePath(`/app/w/${workspaceId}/data`, "layout");
+    return null;
+  });
+}
+
 /** Full details for the row side panel: evidence and history per field. */
 export async function getRowDetail(workspaceId: string, rowId: string) {
   return action(async () => {
@@ -355,7 +368,7 @@ export async function getRowDetail(workspaceId: string, rowId: string) {
     if (!row) throw new AppError("Row not found.", "NOT_FOUND");
     return {
       id: row.id,
-      company: row.company ? { id: row.company.id, name: row.company.name, website: row.company.website, contacts: row.company._count.contacts, opportunities: row.company._count.opportunities } : null,
+      company: row.company ? { id: row.company.id, name: row.company.name, website: row.company.website, contacts: row.company._count.contacts, opportunities: row.company._count.opportunities, verifyStatus: row.company.verifyStatus, verifyNote: row.company.verifyNote, verifySource: row.company.verifySource, verifiedAt: row.company.verifiedAt?.toISOString() ?? null, priority: row.company.priority, privateNotes: row.company.privateNotes } : null,
       values: row.values.map((v) => ({
         fieldId: v.fieldId,
         notes: v.researchNotes,

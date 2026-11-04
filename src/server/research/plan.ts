@@ -2,7 +2,7 @@ import type { FieldDefinition, ResearchScope, User, Workspace } from "@prisma/cl
 import { z } from "zod";
 import { db } from "../db";
 import { AppError } from "../errors";
-import { estimateDiscoveryCredits, estimateEnrichCredits } from "../credits";
+import { estimateDiscoveryCredits, estimateEnrichCredits, estimateVerifyCredits } from "../credits";
 import { getProviders } from "../providers";
 
 const QueryPlanSchema = z.object({
@@ -81,6 +81,33 @@ export async function createEnrichPlan(user: User, ws: Workspace, args: { datase
       budgetCredits: estimated,
       generatedBy,
       items: { create: items },
+    },
+    include: { items: true },
+  });
+}
+
+/** Plan for checking that employers exist online (1 search per company, no AI). */
+export async function createVerifyPlan(user: User, ws: Workspace, args: { datasetId: string; rowIds: string[] }) {
+  const rows = await db.datasetRow.findMany({
+    where: { datasetId: args.datasetId, dataset: { workspaceId: ws.id }, companyId: { not: null }, ...(args.rowIds.length ? { id: { in: args.rowIds } } : {}) },
+    include: { company: true },
+    orderBy: { position: "asc" },
+  });
+  const companies = Array.from(new Map(rows.filter((r) => r.company).map((r) => [r.company!.id, r.company!])).values());
+  if (!companies.length) throw new AppError("No employers to verify in this table.", "INVALID");
+  const city = ws.targetLocations[0] ? ` ${ws.targetLocations[0]}` : "";
+  return db.researchPlan.create({
+    data: {
+      workspaceId: ws.id,
+      datasetId: args.datasetId,
+      createdById: user.id,
+      objective: `Check that ${companies.length} employer${companies.length > 1 ? "s" : ""} exist online and find their official websites.`,
+      scope: "VERIFY_COMPANIES",
+      rowIds: args.rowIds,
+      estimatedCredits: estimateVerifyCredits(companies.length),
+      budgetCredits: estimateVerifyCredits(companies.length),
+      generatedBy: "TEMPLATE",
+      items: { create: companies.map((c, i) => ({ companyId: c.id, instruction: `Verify ${c.name}`, queries: [`"${c.name}" official website${city}`], position: i })) },
     },
     include: { items: true },
   });

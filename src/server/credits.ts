@@ -9,6 +9,10 @@ export function estimateEnrichCredits(cells: number, queriesPerCell: number, pag
   return cells * (queriesPerCell * CREDIT_COST.SEARCH + pagesPerCell * CREDIT_COST.EXTRACT + CREDIT_COST.LLM);
 }
 
+export function estimateVerifyCredits(companies: number) {
+  return companies * CREDIT_COST.SEARCH;
+}
+
 export function estimateDiscoveryCredits(queries: number, pagesPerQuery = 3) {
   return queries * (CREDIT_COST.SEARCH + pagesPerQuery * CREDIT_COST.EXTRACT + CREDIT_COST.LLM);
 }

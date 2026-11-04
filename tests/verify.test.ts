@@ -52,3 +52,28 @@ describe("anti-fabrication gate", () => {
     expect(focusText(text, ["salary", "analyst"], 2000)).toContain("€60,000");
   });
 });
+
+import { assessPresence, distinctiveTokens } from "@/server/research/verify-company";
+
+describe("employer online verification", () => {
+  const r = (url: string, title: string, snippet = "") => ({ url, title, snippet });
+  it("verifies when an official-looking domain names the employer", () => {
+    const res = assessPresence("Tikehau Capital", [r("https://www.linkedin.com/company/tikehau", "Tikehau Capital | LinkedIn"), r("https://www.tikehaucapital.com/en/", "Tikehau Capital – Alternative asset management")]);
+    expect(res.status).toBe("VERIFIED");
+    expect(res.website).toBe("https://www.tikehaucapital.com");
+  });
+  it("only marks as 'to confirm' when directories mention it", () => {
+    const res = assessPresence("Lumen Partners SAS", [r("https://www.societe.com/societe/lumen-partners-123.html", "LUMEN PARTNERS (Paris) Chiffre d'affaires")]);
+    expect(res.status).toBe("AMBIGUOUS");
+  });
+  it("does not verify an invented or irrelevant name", () => {
+    expect(assessPresence("Pommes", [r("https://www.marmiton.org/recettes/tarte", "Tarte aux fruits", "Recette facile")]).status).toBe("NOT_FOUND");
+    expect(assessPresence("Zorblax Quantum Fund", []).status).toBe("NOT_FOUND");
+    // A domain that merely contains a generic word must not verify
+    expect(assessPresence("Capital Partners", [r("https://www.capital.fr/", "Capital.fr : actualité économique")]).status).not.toBe("VERIFIED");
+  });
+  it("ignores generic words when matching", () => {
+    expect(distinctiveTokens("PAI Partners")).toEqual(["pai"]);
+    expect(distinctiveTokens("Groupe Wendel SA")).toEqual(["wendel"]);
+  });
+});

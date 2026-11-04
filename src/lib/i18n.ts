@@ -3,7 +3,7 @@ export type Locale = "en" | "fr";
 const dict = {
   en: {
     home: "Home", workspaces: "My workspaces", research: "Research", companies: "Companies", opportunities: "Opportunities",
-    networking: "Networking", applications: "Applications", compensation: "Compensation", analytics: "Ranking & analytics",
+    networking: "Networking", applications: "Applications", agenda: "Agenda", compensation: "Compensation", analytics: "Ranking & analytics",
     monitoring: "Monitoring", documents: "Documents", settings: "Settings", profile: "Profile", notifications: "Notifications",
     assistant: "Assistant", signOut: "Sign out", newWorkspace: "New workspace", import: "Import data",
     nextActions: "Next best actions", whatChanged: "What changed since your last visit", deadlines: "Upcoming deadlines",
@@ -11,7 +11,7 @@ const dict = {
   },
   fr: {
     home: "Accueil", workspaces: "Mes espaces", research: "Recherche", companies: "Entreprises", opportunities: "Opportunités",
-    networking: "Réseau", applications: "Candidatures", compensation: "Rémunération", analytics: "Classement & analyses",
+    networking: "Réseau", applications: "Candidatures", agenda: "Échéances", compensation: "Rémunération", analytics: "Classement & analyses",
     monitoring: "Veille", documents: "Documents", settings: "Paramètres", profile: "Profil", notifications: "Notifications",
     assistant: "Assistant", signOut: "Se déconnecter", newWorkspace: "Nouvel espace", import: "Importer des données",
     nextActions: "Prochaines actions recommandées", whatChanged: "Nouveautés depuis votre dernière visite", deadlines: "Échéances à venir",

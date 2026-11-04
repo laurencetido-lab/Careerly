@@ -426,6 +426,14 @@ model Company {
   industry       String?
   description    String?
   matchReason    String?
+  // Online existence check (VERIFY_COMPANIES research)
+  verifyStatus   CompanyVerification @default(UNVERIFIED)
+  verifiedAt     DateTime?
+  verifySource   String?
+  verifyNote     String?
+  // User's own triage
+  priority       CompanyPriority     @default(NONE)
+  privateNotes   String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -437,6 +445,21 @@ model Company {
 
   @@unique([workspaceId, normalizedName])
   @@index([workspaceId, domain])
+}
+
+enum CompanyVerification {
+  UNVERIFIED
+  VERIFIED
+  AMBIGUOUS
+  NOT_FOUND
+}
+
+enum CompanyPriority {
+  NONE
+  HIGH
+  MEDIUM
+  LOW
+  EXCLUDED
 }
 
 enum OpportunityPipeline {
@@ -678,6 +701,7 @@ enum ResearchScope {
   DISCOVER_COMPANIES
   DISCOVER_CONTACTS
   DISCOVER_OPPORTUNITIES
+  VERIFY_COMPANIES
 }
 
 enum PlanStatus {
@@ -717,6 +741,8 @@ model ResearchPlanItem {
   plan        ResearchPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
   fieldId     String?
   field       FieldDefinition? @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  // Set for VERIFY_COMPANIES plans: the company this step checks
+  companyId   String?
   instruction String
   queries     String[]         @default([])
   position    Int              @default(0)

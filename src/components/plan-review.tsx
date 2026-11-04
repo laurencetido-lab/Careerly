@@ -19,6 +19,7 @@ const SCOPE_LABEL: Record<string, string> = {
   DISCOVER_COMPANIES: "Discover employers",
   DISCOVER_CONTACTS: "Find professionals",
   DISCOVER_OPPORTUNITIES: "Find opportunities",
+  VERIFY_COMPANIES: "Verify employers online",
 };
 
 export function PlanReviewDialog({ workspaceId, plan, onClose }: { workspaceId: string; plan: PlanView | null; onClose: () => void }) {
@@ -42,7 +43,8 @@ function PlanEditor({ workspaceId, initial, onClose }: { workspaceId: string; in
   const [dirty, setDirty] = useState(false);
   const [pending, start] = useTransition();
   const [jobId, setJobId] = useState<string | null>(null);
-  const discovery = plan.scope.startsWith("DISCOVER");
+  const verify = plan.scope === "VERIFY_COMPANIES";
+  const discovery = plan.scope.startsWith("DISCOVER") || verify;
 
   const edit = (i: number, patch: Partial<(typeof items)[number]>) => {
     setItems(items.map((x, j) => (j === i ? { ...x, ...patch } : x)));
@@ -79,6 +81,7 @@ function PlanEditor({ workspaceId, initial, onClose }: { workspaceId: string; in
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Badge variant="primary">{SCOPE_LABEL[plan.scope] ?? plan.scope}</Badge>
         {!discovery ? <Badge>{plan.rows} row{plan.rows === 1 ? "" : "s"} × {items.length} field{items.length === 1 ? "" : "s"}</Badge> : null}
+        {verify ? <Badge>{items.length} employer{items.length === 1 ? "" : "s"} · 1 search each, no AI</Badge> : null}
         <Badge variant="outline">{plan.generatedBy === "AI" ? <><Sparkles className="size-3" /> Queries drafted by AI</> : "Template queries (AI not configured)"}</Badge>
       </div>
       {plan.objective ? <p className="whitespace-pre-line rounded-md bg-muted/50 p-3 text-sm">{plan.objective}</p> : null}
@@ -99,7 +102,7 @@ function PlanEditor({ workspaceId, initial, onClose }: { workspaceId: string; in
         {items.map((it, i) => (
           <div key={it.id} className="rounded-lg border p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">{it.fieldName ?? `Search ${i + 1}`}</p>
+              <p className="text-sm font-medium">{it.fieldName ?? (verify ? it.instruction : `Search ${i + 1}`)}</p>
               {items.length > 1 ? (
                 <button className="rounded p-1 text-muted-foreground hover:bg-muted" aria-label="Remove from plan" onClick={() => { setItems(items.filter((_, j) => j !== i)); setDirty(true); }}>
                   <Trash2 className="size-3.5" />
@@ -145,7 +148,7 @@ function PlanEditor({ workspaceId, initial, onClose }: { workspaceId: string; in
             <Input id="budget" type="number" min={1} value={budget} onChange={(e) => setBudget(Number(e.target.value))} className="mt-1 h-8" />
             {overBudget ? <p className="mt-1 text-xs text-destructive">More than your available credits.</p> : <p className="mt-1 text-xs text-muted-foreground">Research stops when this is reached.</p>}
           </div>
-          {discovery ? (
+          {discovery && !verify ? (
             <div>
               <Label htmlFor="max" className="text-xs text-muted-foreground">Max results</Label>
               <Input id="max" type="number" min={1} max={100} value={maxResults} onChange={(e) => { setMaxResults(Number(e.target.value)); setDirty(true); }} className="mt-1 h-8" />
