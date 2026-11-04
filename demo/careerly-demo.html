@@ -1,148 +1,286 @@
 <title>Careerly</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,750&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: app shell — fixed sidebar + working canvas; mirrors the real Careerly product UI */
+/* Layout: "dossier de recherche" — forest-green rail + calm paper canvas; evidence marked in honey like a highlighter */
 :root {
-  --bg: #ffffff; --panel: #f7f8fb; --card: #ffffff; --fg: #181b25; --muted: #5f6577; --line: #e3e6ee; --input: #d6dae5;
-  --accent: #4f46e5; --accent-fg: #ffffff; --accent-soft: #eef0fe; --accent-ink: #3b33b8;
-  --good: #1f8a5b; --warn: #b7791f; --bad: #d23c3c; --s1: #2a78d6; --s2: #eb6834;
-  --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --r: 10px;
+  --canvas: #f4f6f3; --surface: #ffffff; --sunk: #eef1ec; --ink: #13201a; --ink-2: #4b5a52; --ink-3: #7c8a82;
+  --rule: #e0e5df; --rule-2: #cfd6cf;
+  --rail: #0f2a22; --rail-2: #173a2f; --rail-ink: #e6efe9; --rail-mute: #94ada2;
+  --accent: #12795a; --accent-ink: #ffffff; --accent-soft: #e2f1ea; --accent-deep: #0b5a42;
+  --honey: #e3a33a; --honey-soft: #fbf0db; --honey-ink: #7a520f;
+  --good: #1d8a5a; --warn: #b8791d; --bad: #c8433a; --s1: #2a78d6; --s2: #eb6834;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r: 12px; --r-sm: 8px;
+  --shadow: 0 1px 0 rgb(19 32 26 / .04), 0 1px 3px rgb(19 32 26 / .06);
+  --shadow-lg: 0 18px 50px -12px rgb(15 42 34 / .35);
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #12141b; --panel: #171a22; --card: #1a1d26; --fg: #eceef4; --muted: #9aa0b2; --line: #2a2e3b; --input: #353a4a;
-  --accent: #8b85f5; --accent-fg: #12141b; --accent-soft: #2a2950; --accent-ink: #c9c6ff;
-  --good: #4cc38a; --warn: #f0b040; --bad: #ef6b6b; --s1: #3987e5; --s2: #d95926; color-scheme: dark; } }
+  --canvas: #0d1512; --surface: #131e19; --sunk: #0f1915; --ink: #e8efea; --ink-2: #a9b8b0; --ink-3: #7d8d85;
+  --rule: #22312a; --rule-2: #2d3f36; --rail: #08110d; --rail-2: #12231c; --rail-ink: #e6efe9; --rail-mute: #7f9a8e;
+  --accent: #3fbf8f; --accent-ink: #06130e; --accent-soft: #163a2d; --accent-deep: #7fdcb7;
+  --honey: #f0b552; --honey-soft: #33280f; --honey-ink: #f5cf8a;
+  --good: #4cc38a; --warn: #f0b040; --bad: #ef7268; --s1: #3987e5; --s2: #d95926;
+  --dossier: #15302a; --dossier-rule: #24463b;
+  --shadow: 0 1px 0 rgb(0 0 0 / .3); --shadow-lg: 0 18px 50px -12px rgb(0 0 0 / .6); color-scheme: dark; } }
 :root[data-theme="dark"] {
-  --bg: #12141b; --panel: #171a22; --card: #1a1d26; --fg: #eceef4; --muted: #9aa0b2; --line: #2a2e3b; --input: #353a4a;
-  --accent: #8b85f5; --accent-fg: #12141b; --accent-soft: #2a2950; --accent-ink: #c9c6ff;
-  --good: #4cc38a; --warn: #f0b040; --bad: #ef6b6b; --s1: #3987e5; --s2: #d95926; color-scheme: dark; }
+  --canvas: #0d1512; --surface: #131e19; --sunk: #0f1915; --ink: #e8efea; --ink-2: #a9b8b0; --ink-3: #7d8d85;
+  --rule: #22312a; --rule-2: #2d3f36; --rail: #08110d; --rail-2: #12231c; --rail-ink: #e6efe9; --rail-mute: #7f9a8e;
+  --accent: #3fbf8f; --accent-ink: #06130e; --accent-soft: #163a2d; --accent-deep: #7fdcb7;
+  --honey: #f0b552; --honey-soft: #33280f; --honey-ink: #f5cf8a;
+  --good: #4cc38a; --warn: #f0b040; --bad: #ef7268; --s1: #3987e5; --s2: #d95926;
+  --dossier: #15302a; --dossier-rule: #24463b;
+  --shadow: 0 1px 0 rgb(0 0 0 / .3); --shadow-lg: 0 18px 50px -12px rgb(0 0 0 / .6); color-scheme: dark; }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.45; }
+body { background: var(--canvas); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 button, input, select, textarea { font: inherit; color: inherit; }
-a { color: var(--accent); }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100%; }
-.side { background: var(--panel); border-right: 1px solid var(--line); padding: 14px 12px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0; height: 100vh; }
-.logo { display: flex; align-items: center; gap: 8px; font-weight: 650; letter-spacing: -0.01em; font-size: 15px; }
-.logo i { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; }
-.ws { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 8px 10px; font-weight: 550; font-size: 13px; }
-.ws small { display: block; color: var(--muted); font-weight: 400; }
-nav { display: flex; flex-direction: column; gap: 2px; }
-nav a { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 7px; color: var(--muted); text-decoration: none; font-size: 13.5px; }
-nav a:hover { background: var(--line); color: var(--fg); }
-nav a[aria-current="page"] { background: var(--card); color: var(--fg); font-weight: 600; box-shadow: 0 0 0 1px var(--line); }
-nav svg { width: 16px; height: 16px; flex: none; }
-.side .foot { margin-top: auto; font-size: 12px; color: var(--muted); display: grid; gap: 8px; }
-main { min-width: 0; padding-block: 22px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 18px; }
-.banner { border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); background: color-mix(in srgb, var(--warn) 10%, var(--bg)); border-radius: var(--r); padding: 10px 14px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
-.banner b { font-weight: 600; }
-h1 { font-size: 21px; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
-h2 { font-size: 14px; margin: 0; }
-.sub { color: var(--muted); margin: 4px 0 0; max-width: 72ch; }
-.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.num, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* ── Shell ── */
+.app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100%; }
+.side { background: var(--rail); color: var(--rail-ink); padding: 18px 14px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 0; height: 100vh; }
+.logo { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 750; font-size: 19px; letter-spacing: -0.02em; padding: 0 6px; }
+.logo i { width: 28px; height: 28px; border-radius: 8px; background: var(--honey); display: grid; place-items: center; }
+.logo small { font-family: var(--body); font-weight: 400; font-size: 11px; color: var(--rail-mute); letter-spacing: .02em; display: block; margin-top: -2px; }
+.ws { background: var(--rail-2); border-radius: 10px; padding: 11px 12px; display: grid; gap: 3px; }
+.ws .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; color: var(--rail-mute); }
+.ws b { font-weight: 600; font-size: 13.5px; line-height: 1.3; }
+.ws small { color: var(--rail-mute); font-size: 12px; }
+nav { display: flex; flex-direction: column; gap: 1px; }
+nav .grp { font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; color: var(--rail-mute); padding: 12px 10px 6px; }
+nav a { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; color: var(--rail-mute); text-decoration: none; font-size: 13.5px; font-weight: 500; transition: background .12s, color .12s; }
+nav a:hover { background: var(--rail-2); color: var(--rail-ink); }
+nav a[aria-current="page"] { background: var(--rail-2); color: #fff; box-shadow: inset 3px 0 0 var(--honey); }
+nav svg { width: 17px; height: 17px; flex: none; }
+nav a .cnt { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--rail-mute); }
+.side .foot { margin-top: auto; display: grid; gap: 8px; font-size: 11.5px; color: var(--rail-mute); padding: 0 4px; }
+.side .foot button { background: transparent; border: 1px solid var(--rail-2); color: var(--rail-ink); border-radius: 8px; height: 32px; cursor: pointer; font-size: 12.5px; }
+.side .foot button:hover { background: var(--rail-2); }
+main { min-width: 0; padding-block: 0 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.topbar { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0 6px; font-size: 12.5px; color: var(--ink-3); }
+.crumb b { color: var(--ink-2); font-weight: 500; }
+.demo-chip { white-space: nowrap; flex: none; display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--rule-2); background: var(--surface); border-radius: 99px; padding: 4px 11px 4px 9px; color: var(--ink-2); cursor: help; position: relative; }
+.demo-chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--honey); box-shadow: 0 0 0 3px var(--honey-soft); }
+.demo-chip:hover .tip, .demo-chip:focus .tip { display: block; }
+.tip { display: none; position: absolute; right: 0; top: calc(100% + 8px); width: 300px; background: var(--ink); color: var(--canvas); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; line-height: 1.45; z-index: 20; box-shadow: var(--shadow-lg); }
+.wrap { max-width: 1200px; margin: 0 auto; display: grid; gap: 22px; padding-top: 10px; }
+
+/* ── Type ── */
+h1 { font-family: var(--display); font-weight: 650; font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.025em; line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 650; font-size: 16px; letter-spacing: -0.01em; margin: 0; }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3); font-weight: 600; }
+.sub { color: var(--ink-2); margin: 8px 0 0; max-width: 66ch; font-size: 14.5px; }
+.meta { color: var(--ink-3); font-size: 12.5px; }
+.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.grid { display: grid; gap: 14px; }
-.g2 { grid-template-columns: 2fr 1fr; } .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; min-width: 0; }
-.card h2 + p { color: var(--muted); font-size: 12.5px; margin: 3px 0 10px; }
-.btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--input); background: var(--card); cursor: pointer; font-weight: 550; font-size: 13px; white-space: nowrap; }
-.btn:hover { background: var(--panel); }
-.btn.pri { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
-.btn.pri:hover { filter: brightness(1.06); }
-.btn.ghost { border-color: transparent; background: transparent; }
-.btn.sm { height: 28px; padding: 0 9px; font-size: 12.5px; }
-.btn[disabled] { opacity: .5; cursor: not-allowed; }
-input.in, select.in, textarea.in { width: 100%; border: 1px solid var(--input); background: var(--bg); border-radius: 8px; padding: 7px 10px; min-height: 34px; }
-textarea.in { min-height: 70px; resize: vertical; }
-label.f { display: grid; gap: 5px; font-size: 12.5px; font-weight: 550; }
-label.f span.h { font-weight: 400; color: var(--muted); font-size: 12px; }
-.badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; padding: 2px 6px; font-size: 11px; font-weight: 600; background: var(--panel); color: var(--muted); border: 1px solid var(--line); white-space: nowrap; }
-.badge.ac { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; }
-.badge.good { color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); border-color: transparent; }
-.badge.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); border-color: transparent; }
-.badge.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); border-color: transparent; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); } .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* ── Surfaces ── */
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 18px 20px; min-width: 0; box-shadow: var(--shadow); }
+.card > h2 + p, .card .lead { color: var(--ink-3); font-size: 12.5px; margin: 4px 0 14px; }
+.sec { border: 1px solid var(--rule); background: var(--surface); border-radius: var(--r); padding: 14px; display: grid; gap: 9px; }
+.sec .lab { font-size: 12px; color: var(--ink-3); font-weight: 600; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.empty { border: 1.5px dashed var(--rule-2); border-radius: var(--r); padding: 40px 20px; text-align: center; color: var(--ink-3); display: grid; justify-items: center; gap: 6px; background: var(--surface); }
+.empty svg { width: 46px; height: 46px; color: var(--accent); margin-bottom: 4px; }
+.empty b { color: var(--ink); font-family: var(--display); font-size: 17px; font-weight: 650; }
+.empty p { margin: 0; max-width: 46ch; }
+
+/* ── Controls ── */
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--rule-2); background: var(--surface); cursor: pointer; font-weight: 550; font-size: 13px; white-space: nowrap; color: var(--ink); transition: background .12s, border-color .12s, transform .06s; text-decoration: none; }
+.btn:hover { background: var(--sunk); border-color: var(--ink-3); }
+.btn:active { transform: translateY(1px); }
+.btn.pri { background: var(--accent); color: var(--accent-ink); border-color: transparent; box-shadow: 0 1px 0 rgb(0 0 0 / .08), inset 0 1px 0 rgb(255 255 255 / .15); }
+.btn.pri:hover { background: var(--accent-deep); color: var(--accent-ink); }
+:root[data-theme="dark"] .btn.pri:hover { background: var(--accent); filter: brightness(1.1); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--ink-2); }
+.btn.ghost:hover { background: var(--sunk); color: var(--ink); }
+.btn.sm { height: 30px; padding: 0 10px; font-size: 12.5px; border-radius: 8px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn svg { width: 15px; height: 15px; }
+input.in, select.in, textarea.in { width: 100%; border: 1px solid var(--rule-2); background: var(--surface); border-radius: var(--r-sm); padding: 8px 11px; min-height: 36px; transition: border-color .12s, box-shadow .12s; }
+input.in:focus, select.in:focus, textarea.in:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea.in { min-height: 76px; resize: vertical; }
+label.f { display: grid; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+label.f span.h { font-weight: 400; color: var(--ink-3); font-size: 12px; }
+.search { position: relative; max-width: 300px; flex: 1; }
+.search svg { position: absolute; left: 11px; top: 50%; translate: 0 -50%; width: 15px; height: 15px; color: var(--ink-3); }
+.search input { padding-left: 34px; }
+
+/* ── Chips ── */
+.badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 99px; padding: 2px 9px; font-size: 11.5px; font-weight: 600; background: var(--sunk); color: var(--ink-2); white-space: nowrap; line-height: 1.6; }
+.badge.ac { background: var(--accent-soft); color: var(--accent-deep); }
+.badge.good { color: var(--good); background: color-mix(in srgb, var(--good) 13%, transparent); }
+.badge.warn { color: var(--honey-ink); background: var(--honey-soft); }
+.badge.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+.badge.out { background: transparent; border: 1px solid var(--rule-2); }
 .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
-.empty { border: 1px dashed var(--input); border-radius: var(--r); padding: 28px 18px; text-align: center; color: var(--muted); }
-.empty b { color: var(--fg); display: block; margin-bottom: 4px; }
-/* table */
-.tablebox { overflow: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); max-height: 68vh; }
-table.t { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
-.t th { position: sticky; top: 0; background: var(--panel); text-align: left; font-weight: 550; color: var(--muted); font-size: 12px; padding: 8px 10px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); white-space: nowrap; cursor: pointer; user-select: none; z-index: 1; }
-.t td { padding: 7px 10px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; min-width: 150px; max-width: 300px; }
-.t td.name { font-weight: 600; min-width: 170px; }
+.mono-av { width: 26px; height: 26px; border-radius: 7px; display: inline-grid; place-items: center; font-family: var(--display); font-weight: 750; font-size: 11px; letter-spacing: -0.02em; color: #fff; flex: none; }
+
+/* ── Table ── */
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.tablebox { overflow: auto; border: 1px solid var(--rule); border-radius: var(--r); background: var(--surface); max-height: 66vh; box-shadow: var(--shadow); }
+table.t { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13.5px; }
+.t th { position: sticky; top: 0; background: var(--sunk); text-align: left; font-weight: 600; color: var(--ink-3); font-size: 11.5px; letter-spacing: .02em; padding: 10px 12px; border-bottom: 1px solid var(--rule); white-space: nowrap; cursor: pointer; user-select: none; z-index: 2; }
+.t th:hover { color: var(--ink); }
+.t th .ty { font-family: var(--mono); font-size: 10px; color: var(--ink-3); opacity: .8; margin-left: 4px; font-weight: 400; }
+.t th.ai { color: var(--accent-deep); }
+.t td { padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: middle; min-width: 150px; max-width: 300px; }
+.t th:first-child, .t td:first-child { position: sticky; left: 0; background: var(--surface); z-index: 1; box-shadow: 1px 0 0 var(--rule); }
+.t th:first-child { background: var(--sunk); z-index: 3; }
+.t tbody tr:hover td { background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface)); }
+.t td.name { font-weight: 600; min-width: 200px; }
+.t td.name a { display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+.t td.name a:hover span { text-decoration: underline; text-underline-offset: 3px; }
 .t td.cell { cursor: text; }
-.t td.cell:hover { background: var(--panel); }
-.t td .v { display: flex; gap: 6px; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.t td .v.unk { color: var(--muted); font-style: italic; }
+.t td .v { display: flex; gap: 7px; align-items: center; overflow: hidden; white-space: nowrap; }
+.t td .v > span.txt { overflow: hidden; text-overflow: ellipsis; }
+.t td .v.unk { color: var(--ink-3); }
+.t td .v.unk .txt { font-size: 12.5px; border: 1px dashed var(--rule-2); border-radius: 99px; padding: 1px 9px; }
+.t td .src { font-family: var(--mono); font-size: 10.5px; color: var(--honey-ink); background: var(--honey-soft); border-radius: 5px; padding: 1px 5px; }
+.t td a.lnk { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); text-decoration: none; }
+.t td a.lnk:hover { color: var(--accent); text-decoration: underline; }
 .t tr:last-child td { border-bottom: 0; }
-.t td input.in { min-height: 28px; padding: 3px 7px; }
-.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.t td input.in { min-height: 30px; padding: 4px 8px; }
+.addrow { display: flex; gap: 8px; max-width: 360px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
 .legend span { display: inline-flex; gap: 6px; align-items: center; }
-/* panel & modal */
-.scrim { position: fixed; inset: 0; background: rgb(10 12 20 / .45); z-index: 40; }
-.panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--card); border-left: 1px solid var(--line); z-index: 41; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-right: env(safe-area-inset-right, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.panel header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-.panel .body { overflow: auto; padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
-.modal { position: fixed; z-index: 41; left: 50%; top: 50%; translate: -50% -50%; width: min(640px, calc(100% - 32px)); max-height: calc(100% - 40px); overflow: auto; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 14px; }
-.x { border: 0; background: transparent; cursor: pointer; padding: 4px 6px; border-radius: 6px; color: var(--muted); font-size: 18px; line-height: 1; }
-.x:hover { background: var(--panel); }
-.sec { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: grid; gap: 8px; }
-.sec .lab { font-size: 12px; color: var(--muted); font-weight: 550; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-.ev { background: var(--panel); border-radius: 8px; padding: 9px 10px; font-size: 12.5px; display: grid; gap: 4px; }
-.ev blockquote { margin: 0; border-left: 2px solid var(--input); padding-left: 8px; font-style: italic; }
-.meta { color: var(--muted); font-size: 12px; }
-.toast { position: fixed; z-index: 60; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); background: var(--fg); color: var(--bg); border-radius: 10px; padding: 10px 14px; font-size: 13px; display: flex; gap: 12px; align-items: center; box-shadow: 0 8px 28px rgb(0 0 0 / .25); }
-.toast button { background: transparent; color: inherit; border: 1px solid currentColor; border-radius: 6px; padding: 2px 8px; cursor: pointer; }
-/* boards */
-.board { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
-.col { flex: 0 0 230px; background: var(--panel); border-radius: var(--r); padding: 8px; display: grid; gap: 8px; align-content: start; min-height: 120px; }
-.col h3 { margin: 0; font-size: 12px; color: var(--muted); padding: 2px 4px; }
-.kcard { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; display: grid; gap: 5px; cursor: pointer; }
-.kcard:hover { border-color: var(--accent); }
-.kcard b { font-size: 13px; }
-.kcard select { font-size: 11.5px; padding: 2px 4px; border-radius: 6px; border: 1px solid var(--input); background: var(--bg); }
-.nba a { display: flex; gap: 10px; padding: 8px; border-radius: 8px; text-decoration: none; color: inherit; }
-.nba a:hover { background: var(--panel); }
-.nba .n { width: 20px; height: 20px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font-size: 11px; font-weight: 700; display: grid; place-items: center; flex: none; }
-.nba small { display: block; color: var(--muted); }
-.steps { display: flex; gap: 6px; flex-wrap: wrap; }
-.steps span { border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; font-size: 12.5px; color: var(--muted); }
-.steps span.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
-.drop { border: 2px dashed var(--input); border-radius: var(--r); padding: 36px 16px; text-align: center; display: grid; gap: 8px; justify-items: center; }
+
+/* ── Panel & modal ── */
+.scrim { position: fixed; inset: 0; background: rgb(8 20 15 / .42); backdrop-filter: blur(2px); z-index: 40; animation: fade .16s ease-out; }
+.panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(580px, 100%); background: var(--canvas); z-index: 41; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); animation: slide .2s cubic-bezier(.2,.8,.2,1); padding-top: env(safe-area-inset-top, 0px); padding-right: env(safe-area-inset-right, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.panel header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 20px 22px 16px; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.panel header .id { display: flex; gap: 12px; align-items: center; }
+.panel header .mono-av { width: 40px; height: 40px; border-radius: 10px; font-size: 15px; }
+.panel header h2 { font-size: 20px; }
+.panel .body { overflow: auto; padding: 18px 22px 28px; display: grid; gap: 12px; align-content: start; }
+.modal { position: fixed; z-index: 41; left: 50%; top: 50%; translate: -50% -50%; width: min(640px, calc(100% - 32px)); max-height: calc(100% - 40px); overflow: auto; background: var(--surface); border-radius: 16px; padding: 22px; display: grid; gap: 16px; box-shadow: var(--shadow-lg); animation: pop .18s cubic-bezier(.2,.8,.2,1); }
+.modal h2 { font-size: 19px; }
+.x { border: 0; background: transparent; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; color: var(--ink-3); font-size: 20px; line-height: 1; flex: none; }
+.x:hover { background: var(--sunk); color: var(--ink); }
+.field-v { font-size: 15px; font-weight: 500; }
+.field-v.big { font-family: var(--display); font-size: 22px; font-weight: 650; letter-spacing: -0.01em; }
+.ev { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 11px 12px; font-size: 13px; display: grid; gap: 6px; }
+.ev .u { font-family: var(--mono); font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.ev blockquote { margin: 0; padding: 2px 0 2px 11px; border-left: 3px solid var(--honey); background: linear-gradient(90deg, var(--honey-soft), transparent 80%); border-radius: 0 6px 6px 0; }
+.consigne { font-size: 12.5px; color: var(--ink-2); background: var(--sunk); border-radius: 8px; padding: 8px 10px; }
+.consigne b { font-weight: 600; color: var(--ink); }
+details summary { cursor: pointer; color: var(--ink-3); font-size: 12.5px; }
+.hist { display: grid; gap: 4px; margin-top: 6px; padding-left: 10px; border-left: 1px solid var(--rule-2); }
+
+.toast { position: fixed; z-index: 60; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: 50%; translate: -50% 0; background: var(--ink); color: var(--canvas); border-radius: 99px; padding: 9px 10px 9px 18px; font-size: 13px; display: flex; gap: 14px; align-items: center; box-shadow: var(--shadow-lg); animation: pop .18s ease-out; max-width: calc(100% - 32px); }
+.toast button { background: var(--honey); color: #1b1305; border: 0; border-radius: 99px; padding: 4px 12px; cursor: pointer; font-weight: 600; font-size: 12.5px; }
+.toast:not(:has(button)) { padding-right: 18px; }
+
+/* ── Boards ── */
+.board { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x proximity; }
+.col { flex: 0 0 248px; background: var(--sunk); border-radius: var(--r); padding: 10px; display: grid; gap: 8px; align-content: start; min-height: 140px; scroll-snap-align: start; }
+.col h3 { margin: 0; font-size: 12px; color: var(--ink-2); padding: 2px 4px 4px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+.col h3 .num { font-size: 11px; background: var(--surface); border-radius: 99px; padding: 0 8px; color: var(--ink-3); }
+.col.empty-col { opacity: .7; }
+.kcard { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 11px 12px; display: grid; gap: 7px; cursor: pointer; box-shadow: var(--shadow); transition: border-color .12s, transform .12s; }
+.kcard:hover { border-color: var(--accent); transform: translateY(-1px); }
+.kcard .top { display: flex; gap: 9px; align-items: center; }
+.kcard b { font-size: 13.5px; line-height: 1.25; }
+.kcard select { font-size: 12px; padding: 3px 6px; border-radius: 7px; border: 1px solid var(--rule-2); background: var(--sunk); }
+
+/* ── Home ── */
+.dossier { background: var(--dossier, var(--rail)); border: 1px solid var(--dossier-rule, transparent); color: var(--rail-ink); border-radius: 18px; padding: 28px 30px; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 28px; position: relative; overflow: hidden; }
+.dossier::after { content: ""; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px; border-radius: 50%; border: 36px solid rgb(227 163 58 / .12); pointer-events: none; }
+.dossier .eyebrow { color: var(--rail-mute); }
+.dossier h1 { color: #fff; margin-top: 6px; }
+.dossier q { display: block; margin-top: 14px; font-size: 15.5px; line-height: 1.55; color: #cfe0d7; quotes: "« " " »"; max-width: 60ch; }
+.dossier .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 16px; }
+.dossier .tags span { border: 1px solid rgb(255 255 255 / .18); border-radius: 99px; padding: 3px 11px; font-size: 12px; color: #e6efe9; }
+.dossier .tags span.r { background: var(--honey); color: #1b1305; border-color: transparent; font-weight: 600; }
+.figs { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgb(255 255 255 / .1); border-radius: 12px; overflow: hidden; align-self: center; position: relative; z-index: 1; }
+.figs a { background: var(--dossier, var(--rail)); padding: 14px 16px; text-decoration: none; color: inherit; display: grid; gap: 2px; }
+.figs a:hover { background: var(--rail-2); }
+.figs b { font-family: var(--display); font-size: 28px; font-weight: 650; letter-spacing: -0.02em; color: #fff; }
+.figs span { font-size: 12px; color: var(--rail-mute); }
+.nba { display: grid; gap: 4px; }
+.nba a { display: grid; grid-template-columns: 4px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 14px 12px 0; border-radius: 10px; text-decoration: none; color: inherit; border: 1px solid transparent; }
+.nba a:hover { background: var(--sunk); }
+.nba a i { align-self: stretch; border-radius: 4px; background: var(--rule-2); }
+.nba a.k-deadline i { background: var(--bad); } .nba a.k-follow i { background: var(--honey); } .nba a.k-contact i { background: var(--s1); } .nba a.k-research i { background: var(--accent); } .nba a.k-setup i { background: var(--rule-2); }
+.nba b { font-weight: 600; display: block; }
+.nba small { display: block; color: var(--ink-3); font-size: 12.5px; margin-top: 2px; }
+.nba .go { color: var(--ink-3); font-size: 18px; }
+.path { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.path a { position: relative; display: grid; gap: 6px; padding: 16px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--rule); text-decoration: none; color: inherit; box-shadow: var(--shadow); transition: border-color .12s, transform .12s; }
+.path a:hover { border-color: var(--accent); transform: translateY(-2px); }
+.path .st { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+.path b { font-family: var(--display); font-size: 16px; font-weight: 650; }
+.path span { font-size: 12.5px; color: var(--ink-3); }
+
+/* ── Import ── */
+.steps { display: flex; gap: 0; flex-wrap: wrap; counter-reset: st; }
+.steps span { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; font-size: 13px; color: var(--ink-3); }
+.steps span::before { counter-increment: st; content: counter(st); width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--rule-2); display: grid; place-items: center; font-family: var(--mono); font-size: 11px; }
+.steps span.on { color: var(--ink); font-weight: 600; }
+.steps span.on::before { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.steps span.done::before { content: "✓"; background: var(--accent-soft); border-color: transparent; color: var(--accent-deep); }
+.drop { border: 2px dashed var(--rule-2); border-radius: 16px; padding: 48px 20px; text-align: center; display: grid; gap: 10px; justify-items: center; background: var(--surface); transition: border-color .12s, background .12s; cursor: pointer; }
+.drop svg { width: 44px; height: 44px; color: var(--accent); }
+.drop b { font-family: var(--display); font-size: 18px; font-weight: 650; }
 .drop.over { border-color: var(--accent); background: var(--accent-soft); }
-.bar { height: 8px; background: var(--panel); border-radius: 99px; overflow: hidden; flex: 1; }
+.bar { height: 8px; background: var(--sunk); border-radius: 99px; overflow: hidden; flex: 1; min-width: 60px; }
 .bar i { display: block; height: 100%; background: var(--s1); border-radius: 99px; }
+.rank-row { display: grid; grid-template-columns: 22px minmax(0, 170px) minmax(0, 1fr) 36px auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+.rank-row:last-child { border-bottom: 0; }
+.rank-row .who { display: flex; gap: 8px; align-items: center; min-width: 0; font-weight: 600; }
+.rank-row .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mobile-top { display: none; }
-.tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; padding: 2px; gap: 2px; }
-.tabs button { border: 0; background: transparent; padding: 5px 10px; border-radius: 6px; cursor: pointer; color: var(--muted); }
-.tabs button[aria-pressed="true"] { background: var(--panel); color: var(--fg); font-weight: 600; }
+.tabs { display: inline-flex; background: var(--sunk); border-radius: 9px; padding: 3px; gap: 2px; }
+.tabs button { border: 0; background: transparent; padding: 5px 12px; border-radius: 7px; cursor: pointer; color: var(--ink-3); font-weight: 500; }
+.tabs button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.how { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: h; }
+.how li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; }
+.banner { border-radius: var(--r); padding: 12px 14px; font-size: 13px; background: var(--honey-soft); color: var(--ink); border: 1px solid color-mix(in srgb, var(--honey) 40%, transparent); }
+.banner b { color: var(--honey-ink); }
+.how li::before { counter-increment: h; content: counter(h); width: 28px; height: 28px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-deep); display: grid; place-items: center; font-family: var(--mono); font-size: 12px; font-weight: 500; }
+.discover { display: grid; gap: 8px; text-align: left; cursor: pointer; }
+.discover svg { width: 22px; height: 22px; color: var(--accent); }
+.discover:hover { border-color: var(--accent); }
+@keyframes fade { from { opacity: 0; } }
+@keyframes slide { from { transform: translateX(24px); opacity: 0; } }
+@keyframes pop { from { opacity: 0; scale: .97; } }
+@media (max-width: 960px) { .path { grid-template-columns: 1fr 1fr; } .dossier { grid-template-columns: 1fr; } }
 @media (max-width: 860px) {
   .app { grid-template-columns: 1fr; }
-  .side { position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 50; transform: translateX(-105%); transition: transform .18s; height: 100%; padding-top: calc(14px + env(safe-area-inset-top, 0px)); padding-left: max(12px, env(safe-area-inset-left, 0px)); }
+  .side { position: fixed; inset: 0 auto 0 0; width: 272px; z-index: 50; transform: translateX(-105%); transition: transform .2s; height: 100%; padding-top: calc(18px + env(safe-area-inset-top, 0px)); padding-left: max(14px, env(safe-area-inset-left, 0px)); box-shadow: var(--shadow-lg); }
   .side.open { transform: none; }
-  .mobile-top { display: flex; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; gap: 10px; align-items: center; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 8px; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
-  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  .mobile-top { display: flex; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; gap: 10px; align-items: center; background: var(--rail); color: var(--rail-ink); padding-block: 10px; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); font-family: var(--display); font-weight: 750; font-size: 17px; }
+  .mobile-top button { background: var(--rail-2); color: var(--rail-ink); border: 0; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 16px; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--rail); }
   .g2, .g3, .g4 { grid-template-columns: 1fr; }
+  .dossier { padding: 22px; }
+  .tip { right: 0; left: auto; width: min(300px, 80vw); }
+  .crumb { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .side { transition: none; } }
+@media (max-width: 520px) { .path { grid-template-columns: 1fr; } .rank-row { grid-template-columns: 18px minmax(0, 1fr) 30px; } .rank-row .bar, .rank-row .badge { display: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 
-<div class="mobile-top"><button class="btn sm" id="menuBtn" aria-label="Ouvrir le menu">☰</button><b>Careerly</b></div>
+<div class="mobile-top"><button id="menuBtn" aria-label="Ouvrir le menu">☰</button>Careerly</div>
 <div class="app">
   <aside class="side" id="side">
-    <div class="logo"><i><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 15.5 10 10l3 3 6-6" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Careerly</div>
+    <div class="logo"><i><svg viewBox="0 0 24 24" width="17" height="17"><path d="M5 15.5 10 10l3 3 6-6" stroke="#1b1305" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="7" r="1.8" fill="#1b1305"/></svg></i><span>Careerly<small>Discover. Connect. Grow.</small></span></div>
     <div class="ws" id="wsName"></div>
     <nav id="nav"></nav>
     <div class="foot">
-      <button class="btn sm" id="resetBtn">Réinitialiser la démo</button>
-      <span>Version de démonstration : vos saisies restent dans ce navigateur.</span>
+      <button id="resetBtn">Réinitialiser la démo</button>
+      <span>Vos saisies restent dans ce navigateur.</span>
     </div>
   </aside>
-  <main><div class="wrap" id="view"></div></main>
+  <main><div class="topbar"><span class="crumb" id="crumb"></span><span class="demo-chip" tabindex="0"><i></i>Mode démo<span class="tip">Les recherches Internet, l'IA et la découverte de contacts demandent la version complète avec ses clés API. Ici, tout le reste fonctionne avec ce que vous saisissez.</span></span></div><div class="wrap" id="view"></div></main>
 </div>
 <div id="layer"></div>
 
@@ -241,11 +379,14 @@ const NAV = [["accueil", "Accueil"], ["entreprises", "Entreprises"], ["import", 
 
 // ───────────────────────── Shell ─────────────────────────
 function shell() {
-  $("#wsName").innerHTML = `${esc(S.ws.name)}<small>${esc(S.ws.locations.join(", "))}</small>`;
+  $("#wsName").innerHTML = `<span class="k">Espace</span><b>${esc(S.ws.name)}</b><small>${esc(S.ws.locations.join(" · "))}</small>`;
   const cur = location.hash.slice(1) || "accueil";
-  $("#nav").innerHTML = NAV.map(([k, l]) => `<a href="#${k}" ${k === cur ? 'aria-current="page"' : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}</a>`).join("");
+  const cnt = { entreprises: S.rows.length, reseau: S.contacts.length, candidatures: S.apps.length };
+  const link = ([k, l]) => `<a href="#${k}" ${k === cur ? 'aria-current="page"' : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}${cnt[k] ? `<span class="cnt">${cnt[k]}</span>` : ""}</a>`;
+  $("#nav").innerHTML = link(NAV[0]) + '<span class="grp">Rechercher</span>' + NAV.slice(1, 4).map(link).join("") + '<span class="grp">Agir</span>' + NAV.slice(4).map(link).join("");
+  $("#crumb").innerHTML = `${esc(S.ws.name)} / <b>${esc((NAV.find(([k]) => k === cur) || NAV[0])[1])}</b>`;
 }
-const banner = `<div class="banner" role="note"><b>Démo</b><span>Les recherches Internet, l'IA et la découverte de contacts nécessitent la version complète avec ses clés API. Ici, tout le reste fonctionne avec ce que vous saisissez.</span></div>`;
+const banner = "";
 function route() {
   shell(); closeLayer(); $("#side").classList.remove("open");
   const v = location.hash.slice(1) || "accueil";
@@ -259,35 +400,42 @@ function actions() {
   const out = [];
   const ai = S.fields.filter((f) => f.type === "AI");
   const missing = ai.reduce((a, f) => a + S.rows.filter((r) => !r.cells[f.id]?.v).length, 0);
-  for (const c of S.contacts) for (const n of c.log || []) if (n.follow && !n.done) { const d = Math.ceil((new Date(n.follow) - new Date(today())) / 864e5); out.push({ p: d <= 0 ? 90 : 70 - d, t: `Relancer ${c.name}`, r: d <= 0 ? `Relance prévue le ${fmtD(n.follow)} : en retard.` : `Relance prévue dans ${d} jour${d > 1 ? "s" : ""}.`, h: "#reseau" }); }
-  for (const a of S.apps) if (a.deadline && STAGES_APP.indexOf(a.stage) < 3) { const d = Math.ceil((new Date(a.deadline) - new Date(today())) / 864e5); if (d >= 0 && d <= 21) out.push({ p: 95 - d * 3, t: `Envoyer la candidature : ${a.role} · ${a.company}`, r: `Date limite dans ${d} jour${d > 1 ? "s" : ""}, étape encore « ${a.stage} ».`, h: "#candidatures" }); }
+  for (const c of S.contacts) for (const n of c.log || []) if (n.follow && !n.done) { const d = Math.ceil((new Date(n.follow) - new Date(today())) / 864e5); out.push({ k: "follow", p: d <= 0 ? 90 : 70 - d, t: `Relancer ${c.name}`, r: d <= 0 ? `Relance prévue le ${fmtD(n.follow)} : en retard.` : `Relance prévue dans ${d} jour${d > 1 ? "s" : ""}.`, h: "#reseau" }); }
+  for (const a of S.apps) if (a.deadline && STAGES_APP.indexOf(a.stage) < 3) { const d = Math.ceil((new Date(a.deadline) - new Date(today())) / 864e5); if (d >= 0 && d <= 21) out.push({ k: "deadline", p: 95 - d * 3, t: `Envoyer la candidature : ${a.role} · ${a.company}`, r: `Date limite dans ${d} jour${d > 1 ? "s" : ""}, étape encore « ${a.stage} ».`, h: "#candidatures" }); }
   const nc = S.contacts.find((c) => STAGES_NET.indexOf(c.stage) <= 1);
-  if (nc) out.push({ p: 55, t: `Contacter ${nc.name}${nc.company ? ` (${nc.company})` : ""}`, r: "Contact présélectionné à qui vous n'avez pas encore écrit.", h: "#reseau" });
-  if (missing) out.push({ p: 40, t: `Compléter ${missing} valeur${missing > 1 ? "s" : ""} à rechercher`, r: `${ai.length} colonne${ai.length > 1 ? "s" : ""} « recherche IA » encore vide${ai.length > 1 ? "s" : ""}. Ouvrez une entreprise pour ajouter une valeur avec sa source.`, h: "#entreprises" });
-  if (!S.contacts.length) out.push({ p: 35, t: "Ajouter une première personne à contacter", r: "Un analyste ou un ancien de votre école chez l'un de vos fonds cibles.", h: "#reseau" });
-  if (!S.apps.length) out.push({ p: 30, t: "Suivre une première candidature", r: "Ajoutez un poste visé, même au stade de la recherche.", h: "#candidatures" });
+  if (nc) out.push({ k: "contact", p: 55, t: `Contacter ${nc.name}${nc.company ? ` (${nc.company})` : ""}`, r: "Contact présélectionné à qui vous n'avez pas encore écrit.", h: "#reseau" });
+  if (missing) out.push({ k: "research", p: 40, t: `Compléter ${missing} valeur${missing > 1 ? "s" : ""} à rechercher`, r: `${ai.length} colonne${ai.length > 1 ? "s" : ""} « recherche IA » encore vide${ai.length > 1 ? "s" : ""}. Ouvrez une entreprise pour ajouter une valeur avec sa source.`, h: "#entreprises" });
+  if (!S.contacts.length) out.push({ k: "contact", p: 35, t: "Ajouter une première personne à contacter", r: "Un analyste ou un ancien de votre école chez l'un de vos fonds cibles.", h: "#reseau" });
+  if (!S.apps.length) out.push({ k: "setup", p: 30, t: "Suivre une première candidature", r: "Ajoutez un poste visé, même au stade de la recherche.", h: "#candidatures" });
   return out.sort((a, b) => b.p - a.p).slice(0, 5);
 }
+const PAL = ["#12795a", "#2a78d6", "#b8791d", "#8a4fc4", "#c8433a", "#0f8a9a", "#5b6b1f", "#b04a7a"];
+function av(name, size) { const n = String(name || "?").trim(); const ini = n.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w[0])).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?"; let h = 0; for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return `<span class="mono-av" aria-hidden="true" style="background:${PAL[h % PAL.length]}${size ? `;width:${size}px;height:${size}px` : ""}">${esc(ini)}</span>`; }
 const fmtD = (d) => (d ? new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "");
 function viewHome() {
   const a = actions();
   const filled = S.fields.filter((f) => f.type === "AI").reduce((x, f) => x + S.rows.filter((r) => r.cells[f.id]?.v).length, 0);
+  const KIND = { deadline: "Date limite", follow: "Relance", contact: "Réseau", research: "Recherche", setup: "Démarrage" };
   return `
-  <div class="head"><div><p class="meta">Votre espace de recherche</p><h1>${esc(S.ws.name)}</h1><p class="sub">${esc(S.ws.objective)}</p>
-    <div class="row" style="margin-top:8px">${S.ws.locations.map((l) => `<span class="badge">${esc(l)}</span>`).join("")}${S.ws.roles.map((r) => `<span class="badge ac">${esc(r)}</span>`).join("")}</div></div>
-    <div class="row"><button class="btn" data-act="editws">Modifier l'objectif</button><a class="btn pri" href="#recherche">Nouvelle recherche</a></div></div>
+  <section class="dossier" aria-label="Votre objectif">
+    <div><span class="eyebrow">Dossier de recherche</span><h1>${esc(S.ws.name)}</h1><q>${esc(S.ws.objective)}</q>
+      <div class="tags">${S.ws.roles.map((r) => `<span class="r">${esc(r)}</span>`).join("")}${S.ws.locations.map((l) => `<span>${esc(l)}</span>`).join("")}</div>
+      <div class="row" style="margin-top:18px"><button class="btn sm" data-act="editws" style="background:transparent;color:#e6efe9;border-color:rgb(255 255 255 / .25)">Modifier l'objectif</button></div></div>
+    <div class="figs">${[["Entreprises", S.rows.length, "#entreprises"], ["Valeurs sourcées", filled, "#entreprises"], ["Contacts", S.contacts.length, "#reseau"], ["Candidatures", S.apps.length, "#candidatures"]].map(([l, n, h]) => `<a href="${h}"><b class="num">${n}</b><span>${l}</span></a>`).join("")}</div>
+  </section>
   <div class="grid g2">
-    <div class="card nba"><h2>Prochaines actions recommandées</h2><p>Classées à partir de vos dates limites, relances et données manquantes.</p>
-      ${a.map((x, i) => `<a href="${x.h}"><span class="n">${i + 1}</span><span><b>${esc(x.t)}</b><small>${esc(x.r)}</small></span></a>`).join("") || '<p class="meta">Rien d\'urgent.</p>'}</div>
-    <div class="card"><h2>En chiffres</h2><p>Ce que contient cet espace.</p>
-      <div class="grid" style="gap:10px">
-        ${[["Entreprises", S.rows.length, "#entreprises"], ["Valeurs sourcées", filled, "#entreprises"], ["Contacts", S.contacts.length, "#reseau"], ["Candidatures", S.apps.length, "#candidatures"]].map(([l, n, h]) => `<a href="${h}" class="row" style="justify-content:space-between;text-decoration:none;color:inherit"><span>${l}</span><b style="font-variant-numeric:tabular-nums">${n}</b></a>`).join("")}
-      </div></div>
+    <div class="card"><h2>Prochaines actions</h2><p>Classées selon vos dates limites, vos relances et les données manquantes.</p>
+      <div class="nba">${a.map((x) => `<a href="${x.h}" class="k-${x.k}"><i></i><span><span class="badge out" style="margin-bottom:5px">${KIND[x.k]}</span><b>${esc(x.t)}</b><small>${esc(x.r)}</small></span><span class="go">›</span></a>`).join("") || '<p class="meta">Rien d\'urgent.</p>'}</div></div>
+    <div class="card"><h2>Comment fonctionne Careerly</h2><p>Ce que fait la version complète, étape par étape.</p>
+      <ol class="how">
+        <li><span><b>Vous décrivez votre objectif</b><br><span class="meta">ou importez votre liste d'employeurs.</span></span></li>
+        <li><span><b>Careerly cherche sur Internet</b><br><span class="meta">sites officiels d'abord, chaque valeur avec sa source.</span></span></li>
+        <li><span><b>Vous contactez les bonnes personnes</b><br><span class="meta">messages rédigés à partir de votre vrai profil.</span></span></li>
+        <li><span><b>Il surveille pour vous</b><br><span class="meta">nouvelles offres, dates limites, changements.</span></span></li>
+      </ol></div>
   </div>
-  <div class="card"><h2>Comment utiliser Careerly</h2><p>Le parcours en quatre temps, du plus simple au plus avancé.</p>
-    <div class="grid g4">
-      ${[["Entreprises", "Cliquez une cellule pour la modifier. Ouvrez une entreprise pour voir et ajouter des valeurs avec leur source.", "#entreprises"], ["Importer", "Déposez votre propre Excel ou CSV : Careerly détecte les colonnes et leurs types.", "#import"], ["Réseau", "Ajoutez une personne, générez un message en deux tons, notez vos échanges et relances.", "#reseau"], ["Candidatures", "Suivez chaque poste de « En recherche » à « Offre ».", "#candidatures"]].map(([t, d, h]) => `<a href="${h}" class="sec" style="text-decoration:none;color:inherit"><b>${t}</b><span class="meta">${d}</span></a>`).join("")}
-    </div></div>`;
+  <div><span class="eyebrow">À essayer dans la démo</span>
+    <div class="path" style="margin-top:10px">${[["Entreprises", "Modifiez une cellule, ouvrez une fiche, ajoutez une valeur avec sa preuve.", "#entreprises"], ["Importer", "Déposez votre propre Excel : colonnes et types sont détectés.", "#import"], ["Réseau", "Ajoutez une personne, rédigez un message, notez l'échange.", "#reseau"], ["Candidatures", "Suivez chaque poste, de l'idée à l'offre.", "#candidatures"]].map(([t, d, h], i) => `<a href="${h}"><span class="st">0${i + 1}</span><b>${t}</b><span>${d}</span></a>`).join("")}</div></div>`;
 }
 
 // ───────────────────────── Table ─────────────────────────
@@ -296,12 +444,12 @@ function viewTable() {
   let rows = S.rows.filter((r) => !search || Object.values(r.cells).some((c) => String(c.v ?? "").toLowerCase().includes(search.toLowerCase())));
   if (sort) { const f = S.fields.find((x) => x.id === sort.id); rows = [...rows].sort((a, b) => { const x = a.cells[f.id]?.v ?? "", y = b.cells[f.id]?.v ?? ""; if (x === "" && y === "") return 0; if (x === "") return 1; if (y === "") return -1; const nx = num(x), ny = num(y); const r = nx != null && ny != null ? nx - ny : String(x).localeCompare(String(y), "fr", { numeric: true }); return sort.dir * r; }); }
   return `
-  <div class="head"><div><h1>Entreprises</h1><p class="sub">Double-cliquez (ou Entrée) sur une cellule pour la modifier. Cliquez sur un nom pour voir les preuves et l'historique.</p></div>
-    <div class="row"><button class="btn" data-act="addfield">+ Champ</button><button class="btn" data-act="copycsv">Copier en CSV</button><button class="btn pri" data-act="research" data-scope="table">Rechercher les champs IA</button></div></div>
-  <div class="row"><input class="in" style="max-width:280px" id="q" placeholder="Rechercher dans le tableau" value="${esc(search)}" aria-label="Rechercher"><span class="meta" style="margin-left:auto">${rows.length} sur ${S.rows.length} lignes</span></div>
-  <div class="tablebox"><table class="t" aria-label="Entreprises"><thead><tr>${S.fields.map((f) => `<th data-sort="${f.id}" title="${esc(TYPES[f.type])}${f.prompt ? " · " + esc(f.prompt) : ""}">${f.type === "AI" ? "✦ " : ""}${esc(f.name)} ${sort?.id === f.id ? (sort.dir > 0 ? "↑" : "↓") : ""}</th>`).join("")}</tr></thead>
+  <div class="head"><div><span class="eyebrow">Vos employeurs cibles</span><h1>Entreprises</h1><p class="sub">Double-cliquez sur une cellule pour la modifier. Cliquez sur un nom pour ouvrir sa fiche, ses preuves et son historique.</p></div>
+    <div class="row"><button class="btn" data-act="copycsv">Copier en CSV</button><button class="btn" data-act="addfield">+ Ajouter un champ</button><button class="btn pri" data-act="research" data-scope="table">✦ Rechercher les champs IA</button></div></div>
+  <div class="toolbar"><label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><input class="in" id="q" placeholder="Rechercher dans le tableau" value="${esc(search)}" aria-label="Rechercher"></label><span class="meta num" style="margin-left:auto">${rows.length} / ${S.rows.length} lignes</span></div>
+  <div class="tablebox"><table class="t" aria-label="Entreprises"><thead><tr>${S.fields.map((f) => `<th data-sort="${f.id}" class="${f.type === "AI" ? "ai" : ""}" title="${esc(TYPES[f.type])}${f.prompt ? " · " + esc(f.prompt) : ""}">${f.type === "AI" ? "✦ " : ""}${esc(f.name)}<span class="ty">${esc(TYPES[vt(f)])}</span> ${sort?.id === f.id ? (sort.dir > 0 ? "↑" : "↓") : ""}</th>`).join("")}</tr></thead>
   <tbody>${rows.map((r) => `<tr>${S.fields.map((f) => cellHtml(r, f)).join("")}</tr>`).join("")}</tbody></table></div>
-  <form class="row" id="addRow"><input class="in" style="max-width:280px" id="newRow" placeholder="+ Ajouter une entreprise" aria-label="Nouvelle entreprise"><button class="btn sm" type="submit">Ajouter</button></form>
+  <form class="addrow" id="addRow"><input class="in" id="newRow" placeholder="Ajouter une entreprise…" aria-label="Nouvelle entreprise"><button class="btn" type="submit">Ajouter</button></form>
   <div class="legend">${Object.values(CONF).map(([l, , c, h]) => `<span title="${h}"><i class="dot" style="background:${c}"></i>${l}</span>`).join("")}<span>🔒 Confirmé par vous : jamais écrasé par une recherche</span></div>`;
 }
 function cellHtml(r, f) {
@@ -310,10 +458,12 @@ function cellHtml(r, f) {
     const t = vt(f);
     return `<td><input class="in" id="cellEdit" value="${esc(c.v ?? "")}" ${t === "DATE" ? 'type="date"' : ""} aria-label="${esc(f.name)}"></td>`;
   }
-  if (f.primary) return `<td class="name"><a href="#entreprises" data-open="${r.id}" style="color:inherit;text-decoration:none">${esc(c.v || "Sans nom")}</a></td>`;
+  if (f.primary) return `<td class="name"><a href="#entreprises" data-open="${r.id}">${av(c.v)}<span>${esc(c.v || "Sans nom")}</span></a></td>`;
   const conf = c.conf ? `<i class="dot" style="background:${CONF[c.conf][2]}" title="${CONF[c.conf][0]}"></i>` : "";
-  const shown = vt(f) === "URL" && c.v ? `<a href="${esc(/^https?:/.test(c.v) ? c.v : "https://" + c.v)}" target="_blank" rel="noopener noreferrer">${esc(String(c.v).replace(/^https?:\/\/(www\.)?/, ""))}</a>` : vt(f) === "SELECT" && c.v ? `<span class="badge ac">${esc(c.v)}</span>` : esc(fmt(f, c.v));
-  return `<td class="cell" tabindex="0" data-r="${r.id}" data-f="${f.id}"><div class="v ${!c.v && f.type === "AI" ? "unk" : ""}">${conf}${shown || (f.type === "AI" ? "À rechercher" : "")}${c.lock ? " 🔒" : ""}</div></td>`;
+  const isNum = ["NUMBER", "CURRENCY"].includes(vt(f));
+  const shown = vt(f) === "URL" && c.v ? `<a class="lnk" href="${esc(/^https?:/.test(c.v) ? c.v : "https://" + c.v)}" target="_blank" rel="noopener noreferrer">${esc(String(c.v).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a>` : vt(f) === "SELECT" && c.v ? `<span class="badge ac">${esc(c.v)}</span>` : c.v ? `<span class="txt ${isNum ? "num" : ""}">${esc(fmt(f, c.v))}</span>` : "";
+  const src = (c.ev || []).length ? `<span class="src" title="${c.ev.length} source(s)">${c.ev.length} src</span>` : "";
+  return `<td class="cell" tabindex="0" data-r="${r.id}" data-f="${f.id}"><div class="v ${!c.v && f.type === "AI" ? "unk" : ""}">${conf}${shown || (f.type === "AI" ? '<span class="txt">À rechercher</span>' : "")}${src}${c.lock ? ' <span title="Confirmé par vous">🔒</span>' : ""}</div></td>`;
 }
 function setCell(rid, fid, v, extra = {}) {
   const r = S.rows.find((x) => x.id === rid); const f = S.fields.find((x) => x.id === fid);
@@ -327,16 +477,16 @@ function setCell(rid, fid, v, extra = {}) {
 // ───────────────────────── Row panel ─────────────────────────
 function openRow(rid) {
   const r = S.rows.find((x) => x.id === rid); if (!r) return;
-  layer(`<div class="scrim" data-close></div><aside class="panel" role="dialog" aria-label="${esc(rowName(r))}"><header><div><h2 style="font-size:16px">${esc(rowName(r))}</h2><p class="meta">${esc(r.cells[S.fields[1]?.id]?.v || "")}</p></div><button class="x" data-close aria-label="Fermer">×</button></header>
+  layer(`<div class="scrim" data-close></div><aside class="panel" role="dialog" aria-label="${esc(rowName(r))}"><header><div class="id">${av(rowName(r))}<div><span class="eyebrow">Fiche entreprise</span><h2>${esc(rowName(r))}</h2><p class="meta mono" style="margin:2px 0 0">${esc(String(r.cells[S.fields[1]?.id]?.v || "").replace(/^https?:\/\/(www\.)?/, ""))}</p></div></div><button class="x" data-close aria-label="Fermer">×</button></header>
   <div class="body">
     <div class="row"><button class="btn sm" data-act="research" data-scope="row" data-r="${r.id}">✦ Rechercher cette ligne</button><button class="btn sm" data-act="newapp" data-company="${esc(rowName(r))}">Suivre une candidature</button><button class="btn sm" data-act="newcontact" data-company="${esc(rowName(r))}">Ajouter un contact ici</button></div>
     ${S.fields.filter((f) => !f.primary).map((f) => { const c = r.cells[f.id] || {}; return `
     <section class="sec" aria-label="${esc(f.name)}">
       <div class="lab"><span>${f.type === "AI" ? "✦ " : ""}${esc(f.name)} · ${TYPES[vt(f)]}</span><span class="row">${c.conf ? `<span class="badge ${CONF[c.conf][1]}">${CONF[c.conf][0]}</span>` : ""}${c.lock ? '<span class="badge">🔒 Confirmé</span>' : ""}</span></div>
-      <div>${c.v ? esc(fmt(f, c.v)) : `<i class="meta">${f.type === "AI" ? "Pas encore recherché" : "Vide"}</i>`}</div>
-      ${f.prompt ? `<div class="meta">Consigne : ${esc(f.prompt)}</div>` : ""}
-      ${(c.ev || []).map((e) => `<div class="ev"><a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${esc(e.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60))}</a><blockquote>“${esc(e.excerpt)}”</blockquote><span class="meta">${CONF[e.conf][0]} · ajouté par vous le ${new Date(e.at).toLocaleDateString("fr-FR")}${e.note ? " · " + esc(e.note) : ""}</span></div>`).join("")}
-      ${(c.hist || []).length ? `<details><summary class="meta" style="cursor:pointer">Historique (${c.hist.length})</summary>${c.hist.slice().reverse().map((h) => `<div class="meta">${new Date(h.at).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} : <s>${esc(fmt(f, h.from) || "vide")}</s> → <b>${esc(fmt(f, h.to) || "vide")}</b> · ${esc(h.why)}</div>`).join("")}</details>` : ""}
+      <div class="field-v ${["CURRENCY", "NUMBER"].includes(vt(f)) && c.v ? "big num" : ""}">${c.v ? esc(fmt(f, c.v)) : `<span class="meta">${f.type === "AI" ? "Pas encore recherché" : "Vide"}</span>`}</div>
+      ${f.prompt ? `<div class="consigne"><b>Consigne de recherche :</b> ${esc(f.prompt)}</div>` : ""}
+      ${(c.ev || []).map((e) => `<div class="ev"><a class="u" href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">↗ ${esc(e.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60))}</a><blockquote>${esc(e.excerpt)}</blockquote><span class="meta">${CONF[e.conf][0]} · ajouté par vous le ${new Date(e.at).toLocaleDateString("fr-FR")}${e.note ? " · " + esc(e.note) : ""}</span></div>`).join("")}
+      ${(c.hist || []).length ? `<details><summary>Historique · ${c.hist.length} modification${c.hist.length > 1 ? "s" : ""}</summary><div class="hist">${c.hist.slice().reverse().map((h) => `<div class="meta">${new Date(h.at).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} : <s>${esc(fmt(f, h.from) || "vide")}</s> → <b>${esc(fmt(f, h.to) || "vide")}</b> · ${esc(h.why)}</div>`).join("")}</div></details>` : ""}
       <div class="row"><button class="btn sm ghost" data-act="evid" data-r="${r.id}" data-f="${f.id}">+ Valeur avec sa source</button><button class="btn sm ghost" data-act="lock" data-r="${r.id}" data-f="${f.id}">${c.lock ? "Déverrouiller" : "🔒 Confirmer la valeur"}</button></div>
     </section>`; }).join("")}
     <button class="btn" data-act="delrow" data-r="${r.id}" style="justify-self:start;color:var(--bad)">Supprimer cette entreprise</button>
@@ -389,11 +539,11 @@ function researchModal(scope, rid) {
 // ───────────────────────── Import ─────────────────────────
 let imp = null;
 function viewImport() {
-  if (!imp) return `<div class="head"><div><h1>Importer un fichier</h1><p class="sub">Déposez votre liste d'employeurs. Toutes les colonnes sont gardées, même celles que Careerly ne connaît pas.</p></div></div>
-    <div class="steps"><span class="on">1 · Fichier</span><span>2 · Colonnes</span><span>3 · Vérification</span></div>
-    <label class="drop" id="drop"><b>Déposez un fichier Excel ou CSV</b><span class="meta">.xlsx, .xls ou .csv · le fichier reste dans votre navigateur</span><input type="file" id="file" accept=".xlsx,.xls,.csv" style="max-width:260px"></label>`;
+  if (!imp) return `<div class="head"><div><span class="eyebrow">Mode A</span><h1>Importer un fichier</h1><p class="sub">Déposez votre liste d'employeurs. Toutes les colonnes sont gardées, même celles que Careerly ne connaît pas.</p></div></div>
+    <div class="steps"><span class="on">Fichier</span><span>Colonnes</span><span>Vérification</span></div>
+    <label class="drop" id="drop"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6h17l9 9v27H12z"/><path d="M29 6v9h9M18 26h14M18 32h14M24 20v18"/></svg><b>Déposez un fichier Excel ou CSV</b><span class="meta">.xlsx, .xls ou .csv · le fichier reste dans votre navigateur</span><input type="file" id="file" accept=".xlsx,.xls,.csv" style="max-width:260px"></label>`;
   if (imp.step === 2) return `<div class="head"><div><h1>Importer « ${esc(imp.file)} »</h1><p class="sub">Vérifiez le type détecté de chaque colonne et indiquez celle qui contient le nom de l'employeur.</p></div></div>
-    <div class="steps"><span>1 · Fichier</span><span class="on">2 · Colonnes</span><span>3 · Vérification</span></div>
+    <div class="steps"><span class="done">Fichier</span><span class="on">Colonnes</span><span>Vérification</span></div>
     <div class="row">${imp.sheets.length > 1 ? `<label class="f" style="min-width:200px">Feuille<select class="in" id="sheet">${imp.sheets.map((s) => `<option ${s === imp.sheet ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></label>` : ""}<span class="meta">${imp.data.length} lignes détectées · ligne d'en-tête ${imp.headerRow + 1}</span></div>
     <div class="tablebox"><table class="t"><thead><tr><th>Garder</th><th>Nom de colonne</th><th>Type</th><th>Rôle</th><th>Exemples</th></tr></thead><tbody>
     ${imp.map.map((m, i) => `<tr><td><input type="checkbox" data-mk="${i}" ${m.keep ? "checked" : ""} aria-label="Garder ${esc(m.name)}"></td><td><input class="in" data-mn="${i}" value="${esc(m.name)}" aria-label="Nom"></td><td><select class="in" data-mt="${i}" aria-label="Type de ${esc(m.name)}">${Object.entries(TYPES).filter(([k]) => k !== "AI").map(([k, l]) => `<option value="${k}" ${k === m.type ? "selected" : ""}>${l}</option>`).join("")}</select></td><td><select class="in" data-mr="${i}" aria-label="Rôle"><option value="">Champ personnalisé</option><option value="name" ${m.role === "name" ? "selected" : ""}>Nom de l'employeur</option></select></td><td class="meta">${esc(imp.data.map((r) => r[m.idx]).filter((x) => x !== null && x !== "").slice(0, 3).join(" · "))}</td></tr>`).join("")}
@@ -401,7 +551,7 @@ function viewImport() {
     <div class="row" style="justify-content:space-between"><button class="btn ghost" data-act="impcancel">Annuler</button><button class="btn pri" data-act="impcheck">Vérifier les données</button></div>`;
   const v = imp.check;
   return `<div class="head"><div><h1>Vérification</h1><p class="sub">Corrigez une valeur ici, ou revenez changer le type de colonne. Les valeurs restées invalides sont importées vides.</p></div></div>
-    <div class="steps"><span>1 · Fichier</span><span>2 · Colonnes</span><span class="on">3 · Vérification</span></div>
+    <div class="steps"><span class="done">Fichier</span><span class="done">Colonnes</span><span class="on">Vérification</span></div>
     <div class="row"><span class="badge ac">${imp.data.length} lignes</span><span class="badge ${v.issues.length ? "warn" : "good"}">${v.issues.length} valeur${v.issues.length > 1 ? "s" : ""} à corriger</span><span class="badge ${v.dups.length ? "warn" : "good"}">${v.dups.length} doublon${v.dups.length > 1 ? "s" : ""}</span></div>
     ${v.dups.length ? `<div class="card"><h2>Doublons</h2><p>${v.dups.map((d) => `Ligne ${d.row} : « ${esc(d.v)} » répète la ligne ${d.first}`).join(" · ")}</p><label class="row"><input type="checkbox" id="skipDup" checked> Garder la première occurrence, ignorer les répétitions</label></div>` : ""}
     ${v.issues.length ? `<div class="tablebox"><table class="t"><tbody>${v.issues.map((x, i) => `<tr><td class="meta">Ligne ${x.row}</td><td>${esc(x.col)}</td><td style="color:var(--bad)">${esc(x.msg)}</td><td><input class="in" data-fix="${i}" placeholder="Valeur corrigée" aria-label="Corriger ligne ${x.row}"></td></tr>`).join("")}</tbody></table></div>` : ""}
@@ -450,10 +600,10 @@ function commitImport() {
 
 // ───────────────────────── Research hub ─────────────────────────
 function viewResearch() {
-  return `<div class="head"><div><h1>Recherche</h1><p class="sub">Décrivez ce que vous cherchez. Careerly propose un plan ; rien ne se lance sans votre accord et votre budget.</p></div></div>
-  <div class="grid g3">${[["Découvrir des employeurs", "Trouver des employeurs qui correspondent à votre objectif."], ["Trouver des offres", "Postes ouverts, programmes graduate, stages."], ["Trouver des professionnels", "Profils publics chez un employeur cible."]].map(([t, d], i) => `<button class="card" style="text-align:left;cursor:pointer" data-act="discover" data-k="${i}"><b>${t}</b><p class="meta" style="margin:4px 0 0">${d}</p></button>`).join("")}</div>
+  return `<div class="head"><div><span class="eyebrow">Moteur de recherche</span><h1>Recherche</h1><p class="sub">Décrivez ce que vous cherchez. Careerly propose un plan ; rien ne se lance sans votre accord et votre budget.</p></div></div>
+  <div class="grid g3">${[["Découvrir des employeurs", "Trouver des employeurs qui correspondent à votre objectif."], ["Trouver des offres", "Postes ouverts, programmes graduate, stages."], ["Trouver des professionnels", "Profils publics chez un employeur cible."]].map(([t, d], i) => `<button class="card discover" data-act="discover" data-k="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${[ICON.entreprises, ICON.candidatures, ICON.reseau][i]}</svg><h2>${t}</h2><span class="meta">${d}</span></button>`).join("")}</div>
   <div class="card"><h2>Ce que fait la version complète</h2><p>Pour chaque question, Careerly :</p>
-    <ol style="margin:0;padding-left:18px;display:grid;gap:6px">
+    <ol class="how">
       <li>génère des requêtes ciblées (en français et en anglais) ;</li>
       <li>interroge un moteur de recherche (Tavily ou Brave) et classe les sources : site officiel d'abord, puis presse reconnue, puis plateformes de salaires ;</li>
       <li>lit les pages autorisées et fait extraire la réponse par Claude ;</li>
@@ -464,9 +614,9 @@ function viewResearch() {
 
 // ───────────────────────── Network ─────────────────────────
 function viewNetwork() {
-  return `<div class="head"><div><h1>Réseau</h1><p class="sub">Les personnes à contacter, vos messages et vos échanges. Faites passer une carte d'étape avec le menu.</p></div><button class="btn pri" data-act="newcontact">+ Ajouter un contact</button></div>
-  ${S.contacts.length ? `<div class="board">${STAGES_NET.map((st) => { const cs = S.contacts.filter((c) => c.stage === st); return `<div class="col"><h3>${st} · ${cs.length}</h3>${cs.map((c) => `<div class="kcard" data-contact="${c.id}"><b>${esc(c.name)}</b><span class="meta">${esc(c.title || "Poste non renseigné")}</span><span class="meta">${esc(c.company || "")}</span><select data-cstage="${c.id}" aria-label="Étape">${STAGES_NET.map((s) => `<option ${s === c.stage ? "selected" : ""}>${s}</option>`).join("")}</select></div>`).join("")}</div>`; }).join("")}</div>`
-  : `<div class="empty"><b>Aucun contact pour l'instant</b>Ajoutez une personne que vous connaissez ou que vous avez repérée chez l'un de vos fonds. La version complète peut aussi en trouver dans les sources publiques.<div style="margin-top:12px"><button class="btn pri" data-act="newcontact">+ Ajouter un contact</button></div></div>`}`;
+  return `<div class="head"><div><span class="eyebrow">Les bonnes personnes</span><h1>Réseau</h1><p class="sub">Les personnes à contacter, vos messages et vos échanges. Faites passer une carte d'étape avec le menu.</p></div><button class="btn pri" data-act="newcontact">+ Ajouter un contact</button></div>
+  ${S.contacts.length ? `<div class="board">${STAGES_NET.map((st) => { const cs = S.contacts.filter((c) => c.stage === st); return `<div class="col ${cs.length ? "" : "empty-col"}"><h3>${st}<span class="num">${cs.length}</span></h3>${cs.map((c) => `<div class="kcard" data-contact="${c.id}"><div class="top">${av(c.name)}<div><b>${esc(c.name)}</b><div class="meta">${esc(c.title || "Poste non renseigné")}</div></div></div><span class="meta">${esc(c.company || "")}${c.city ? " · " + esc(c.city) : ""}</span><select data-cstage="${c.id}" aria-label="Étape">${STAGES_NET.map((s) => `<option ${s === c.stage ? "selected" : ""}>${s}</option>`).join("")}</select></div>`).join("")}</div>`; }).join("")}</div>`
+  : `<div class="empty"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="19" cy="18" r="7"/><path d="M6 40c0-7 6-12 13-12s13 5 13 12"/><path d="M34 14v12M28 20h12"/></svg><b>Aucun contact pour l'instant</b><p>Ajoutez une personne que vous connaissez ou que vous avez repérée chez l'un de vos fonds. La version complète peut aussi en trouver dans les sources publiques.</p><div style="margin-top:10px"><button class="btn pri" data-act="newcontact">+ Ajouter un contact</button></div></div>`}`;
 }
 function contactForm(company = "") {
   layer(`<div class="scrim" data-close></div><form class="modal" id="cForm" role="dialog" aria-label="Nouveau contact"><div class="row" style="justify-content:space-between"><h2>Ajouter un contact</h2><button type="button" class="x" data-close aria-label="Fermer">×</button></div>
@@ -500,7 +650,7 @@ function draft(c, purpose, tone) {
 }
 function openContact(id) {
   const c = S.contacts.find((x) => x.id === id); if (!c) return; const sc = score(c);
-  layer(`<div class="scrim" data-close></div><aside class="panel" role="dialog" aria-label="${esc(c.name)}"><header><div><h2 style="font-size:16px">${esc(c.name)}</h2><p class="meta">${esc([c.title || "Poste non renseigné", c.company, c.city].filter(Boolean).join(" · "))}</p><div class="row" style="margin-top:6px"><span class="badge ac">Pertinence ${sc.s}/100</span>${c.alumni ? `<span class="badge good">Même école</span>` : ""}</div></div><button class="x" data-close aria-label="Fermer">×</button></header>
+  layer(`<div class="scrim" data-close></div><aside class="panel" role="dialog" aria-label="${esc(c.name)}"><header><div class="id">${av(c.name)}<div><span class="eyebrow">Contact</span><h2>${esc(c.name)}</h2><p class="meta" style="margin:2px 0 0">${esc([c.title || "Poste non renseigné", c.company, c.city].filter(Boolean).join(" · "))}</p><div class="row" style="margin-top:6px"><span class="badge ac">Pertinence ${sc.s}/100</span>${c.alumni ? `<span class="badge good">Même école</span>` : ""}</div></div></div><button class="x" data-close aria-label="Fermer">×</button></header>
   <div class="body">
     <div class="sec"><div class="lab">Pourquoi cette personne</div><span>${esc(sc.r.join(" · ") || "Ajoutée par vous.")}</span><span class="meta">Pas de « probabilité de réponse » : seulement des raisons vérifiables.</span></div>
     <div class="sec"><div class="lab">Rédiger un message</div>
@@ -514,7 +664,7 @@ function openContact(id) {
       <label class="f">Ce que vous avez appris<textarea class="in" id="lS"></textarea></label>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px"><label class="f">Info salaire (privée)<input class="in" id="lSal"></label><label class="f">Relance le<input class="in" type="date" id="lF"></label></div>
       <button class="btn sm" id="lSave" style="justify-self:start">Enregistrer l'échange</button></div>
-    <div class="sec"><div class="lab">Historique</div>${[...(c.log || []).map((l, i) => `<div class="ev"><b>${esc(l.type)} · ${new Date(l.date).toLocaleDateString("fr-FR")}</b>${l.sum ? `<span>${esc(l.sum)}</span>` : ""}${l.sal ? `<span class="meta">Salaire (privé) : ${esc(l.sal)}</span>` : ""}${l.follow ? `<span class="row meta">Relance le ${new Date(l.follow).toLocaleDateString("fr-FR")} ${l.done ? "· faite" : `<button class="btn sm" data-done="${i}">Marquer faite</button>`}</span>` : ""}</div>`), ...(c.drafts || []).map((d) => `<div class="ev" style="border:1px dashed var(--input);background:transparent"><span class="meta">Brouillon enregistré · ${new Date(d.at).toLocaleDateString("fr-FR")}</span><span style="white-space:pre-line">${esc(d.body)}</span></div>`)].join("") || '<span class="meta">Aucun échange pour l\'instant.</span>'}</div>
+    <div class="sec"><div class="lab">Historique</div>${[...(c.log || []).map((l, i) => `<div class="ev"><b>${esc(l.type)} · ${new Date(l.date).toLocaleDateString("fr-FR")}</b>${l.sum ? `<span>${esc(l.sum)}</span>` : ""}${l.sal ? `<span class="meta">Salaire (privé) : ${esc(l.sal)}</span>` : ""}${l.follow ? `<span class="row meta">Relance le ${new Date(l.follow).toLocaleDateString("fr-FR")} ${l.done ? "· faite" : `<button class="btn sm" data-done="${i}">Marquer faite</button>`}</span>` : ""}</div>`), ...(c.drafts || []).map((d) => `<div class="ev" style="border:1px dashed var(--rule-2);background:transparent"><span class="meta">Brouillon enregistré · ${new Date(d.at).toLocaleDateString("fr-FR")}</span><span style="white-space:pre-line">${esc(d.body)}</span></div>`)].join("") || '<span class="meta">Aucun échange pour l\'instant.</span>'}</div>
     <button class="btn" data-act="delcontact" data-c="${c.id}" style="justify-self:start;color:var(--bad)">Supprimer ce contact</button>
   </div></aside>`);
   let tone = "pro"; const upd = () => { $("#mB").value = draft(c, $("#mP").value, tone); cnt(); };
@@ -528,9 +678,9 @@ function openContact(id) {
 
 // ───────────────────────── Applications ─────────────────────────
 function viewApps() {
-  return `<div class="head"><div><h1>Candidatures</h1><p class="sub">Chaque poste visé, de la recherche à l'offre. Cliquez une carte pour la détailler.</p></div><button class="btn pri" data-act="newapp">+ Nouvelle candidature</button></div>
-  ${S.apps.length ? `<div class="board">${STAGES_APP.map((st) => { const as = S.apps.filter((a) => a.stage === st); return `<div class="col"><h3>${st} · ${as.length}</h3>${as.map((a) => `<div class="kcard" data-app="${a.id}"><b>${esc(a.role)}</b><span class="meta">${esc(a.company || "")}</span>${a.deadline ? `<span class="badge warn">Limite ${fmtD(a.deadline)}</span>` : ""}${a.next ? `<span class="meta">→ ${esc(a.next)}</span>` : ""}<select data-astage="${a.id}" aria-label="Étape">${STAGES_APP.map((s) => `<option ${s === a.stage ? "selected" : ""}>${s}</option>`).join("")}</select></div>`).join("")}</div>`; }).join("")}</div>`
-  : `<div class="empty"><b>Aucune candidature suivie</b>Ajoutez un poste, même s'il n'est encore qu'une idée.<div style="margin-top:12px"><button class="btn pri" data-act="newapp">+ Nouvelle candidature</button></div></div>`}`;
+  return `<div class="head"><div><span class="eyebrow">Votre pipeline</span><h1>Candidatures</h1><p class="sub">Chaque poste visé, de la recherche à l'offre. Cliquez une carte pour la détailler.</p></div><button class="btn pri" data-act="newapp">+ Nouvelle candidature</button></div>
+  ${S.apps.length ? `<div class="board">${STAGES_APP.map((st) => { const as = S.apps.filter((a) => a.stage === st); return `<div class="col ${as.length ? "" : "empty-col"}"><h3>${st}<span class="num">${as.length}</span></h3>${as.map((a) => `<div class="kcard" data-app="${a.id}"><div class="top">${av(a.company || a.role)}<div><b>${esc(a.role)}</b><div class="meta">${esc(a.company || "")}</div></div></div>${a.deadline ? `<span class="badge warn">Limite ${fmtD(a.deadline)}</span>` : ""}${a.next ? `<span class="meta">→ ${esc(a.next)}</span>` : ""}<select data-astage="${a.id}" aria-label="Étape">${STAGES_APP.map((s) => `<option ${s === a.stage ? "selected" : ""}>${s}</option>`).join("")}</select></div>`).join("")}</div>`; }).join("")}</div>`
+  : `<div class="empty"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="10" width="36" height="30" rx="4"/><path d="M18 10V6h12v4M6 22h36"/></svg><b>Aucune candidature suivie</b><p>Ajoutez un poste, même s'il n'est encore qu'une idée.</p><div style="margin-top:10px"><button class="btn pri" data-act="newapp">+ Nouvelle candidature</button></div></div>`}`;
 }
 function appForm(id, company = "") {
   const a = S.apps.find((x) => x.id === id) || { role: "", company, stage: "Intéressé", deadline: "", url: "", next: "", notes: "" };
@@ -550,13 +700,13 @@ function viewRanking() {
   const ranges = Object.fromEntries(crit.map((c) => { const ns = S.rows.map((r) => valNum(r, c.f)).filter((n) => n != null); return [c.f, [Math.min(...ns), Math.max(...ns)]]; }));
   const res = S.rows.map((r) => { let got = 0, sum = 0; for (const c of crit) { const n = valNum(r, c.f); if (n == null) continue; const [mi, ma] = ranges[c.f]; let x = vt(S.fields.find((f) => f.id === c.f)) === "BOOL" ? n : ma === mi ? 1 : (n - mi) / (ma - mi); if (c.dir === "low") x = 1 - x; got += c.w; sum += x * c.w; } return { r, score: got ? (sum / got) * 100 : null, comp: got / total }; })
     .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
-  return `<div class="head"><div><h1>Classement</h1><p class="sub">Vos critères, vos poids. Une donnée manquante n'est jamais devinée : le classement est alors marqué « provisoire ».</p></div></div>
+  return `<div class="head"><div><span class="eyebrow">Vos priorités</span><h1>Classement</h1><p class="sub">Vos critères, vos poids. Une donnée manquante n'est jamais devinée : le classement est alors marqué « provisoire ».</p></div></div>
   <div class="grid g2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)">
     <div class="card"><h2>Vos critères</h2><p>Seuls les champs Nombre, Montant et Oui/Non peuvent servir.</p>
       ${numeric.length ? crit.map((c, i) => `<div class="sec" style="margin-bottom:8px"><select class="in" data-cf="${i}">${numeric.map((f) => `<option value="${f.id}" ${f.id === c.f ? "selected" : ""}>${esc(f.name)}</option>`).join("")}</select><div class="row"><label class="f" style="flex:1">Poids %<input class="in" type="number" min="0" max="100" data-cw="${i}" value="${c.w}"></label><label class="f" style="flex:1">Mieux si<select class="in" data-cd="${i}"><option value="high" ${c.dir !== "low" ? "selected" : ""}>Plus élevé</option><option value="low" ${c.dir === "low" ? "selected" : ""}>Plus bas</option></select></label><button class="btn sm ghost" data-cx="${i}" aria-label="Retirer">×</button></div></div>`).join("") + `<div class="row" style="justify-content:space-between"><button class="btn sm" data-act="addcrit">+ Critère</button><span class="meta" style="color:${Math.abs(crit.reduce((a, c) => a + c.w, 0) - 100) > 0.5 && crit.length ? "var(--bad)" : ""}">Total ${crit.reduce((a, c) => a + c.w, 0)} %</span></div>` : `<p class="meta">Ajoutez d'abord un champ numérique dans Entreprises (par exemple « Salaire analyste », un Montant), puis renseignez des valeurs.</p>`}
     </div>
     <div class="card"><h2>Résultat</h2><p>Score sur 100 calculé uniquement sur les critères renseignés.</p>
-      ${crit.length ? res.map((x, i) => `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line);flex-wrap:nowrap"><span class="meta" style="width:18px">${x.score == null ? "–" : i + 1}</span><b style="width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(rowName(x.r))}</b><span class="bar"><i style="width:${x.score ?? 0}%;opacity:${x.comp < 1 ? 0.55 : 1}"></i></span><span style="width:30px;text-align:right;font-variant-numeric:tabular-nums">${x.score == null ? "–" : Math.round(x.score)}</span>${x.score == null ? '<span class="badge">Pas de données</span>' : x.comp < 1 ? `<span class="badge warn">Provisoire · ${Math.round(x.comp * 100)} %</span>` : '<span class="badge good">Complet</span>'}</div>`).join("") : '<p class="meta">Ajoutez un critère pour voir le classement.</p>'}
+      ${crit.length ? res.map((x, i) => `<div class="rank-row"><span class="meta num">${x.score == null ? "–" : i + 1}</span><span class="who">${av(rowName(x.r), 22)}<span>${esc(rowName(x.r))}</span></span><span class="bar"><i style="width:${x.score ?? 0}%;opacity:${x.comp < 1 ? 0.55 : 1}"></i></span><span class="num" style="text-align:right">${x.score == null ? "–" : Math.round(x.score)}</span>${x.score == null ? '<span class="badge">Pas de données</span>' : x.comp < 1 ? `<span class="badge warn">Provisoire · ${Math.round(x.comp * 100)} %</span>` : '<span class="badge good">Complet</span>'}</div>`).join("") : '<p class="meta">Ajoutez un critère pour voir le classement.</p>'}
     </div></div>`;
 }
 const valNum = (r, fid) => { const f = S.fields.find((x) => x.id === fid); const v = r.cells[fid]?.v; if (v == null || v === "") return null; if (vt(f) === "BOOL") return /^(oui|yes|true|1|x)$/i.test(v) ? 1 : 0; return num(v); };
